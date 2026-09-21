@@ -1,0 +1,1147 @@
+
+Towards Efficient Routing and Handoff Mechanisms in the Internet of Vehicles (IoV): A Comprehensive Survey
+Ankita Srivastava, Sandeep Choudhary, and Divyansh Gehlot
+
+Abstract—Internet of Vehicles (IoV) is a development of previous vehicular ad-hoc networks with the use of multiple communication techniques, such as dedicated short-range communications, cellular networks, and Wi-Fi, for performing many applications, including collision avoidance and infotainment systems. In this case, routing and handover are two main functions in IoV network, where routing implies the search of a suitable path for message exchange, while handover provides continuous connectivity for vehicles moving in IoV by switching connections to new access points, either using the same technique (horizontal handover) or different one (vertical handover). This article represents the comprehensive survey of modern approaches for routing and handover in IoV network. Classical rule-based and heuristic approaches as well as the most recent advances based on the artificial intelligence and machine learning for solving the problems of routing and handover, in particular, deep reinforcement learning techniques, are covered in the paper. Various techniques of routing are taken into account, namely, topology-based, geographical, clustering, congestion-aware, and hybrid routing algorithms. As for handover techniques, both horizontal and vertical methods are taken into consideration separately. Moreover, different simulation techniques, mobility models, datasets, and criteria of evaluation are described and compared in the paper. In particular, packet delivery rate, end-to-end delay, and handover delay criteria are used for comparing different approaches. The results of the comparison demonstrate the advantage of learning-based approaches over classical ones in dynamic environment in terms of performance. However, they require more computations and do not provide much explainability. Despite some advances in routing and handover approaches in IoV, routing and handover tasks are usually considered separately from each other, the problem of validation on real cars exists, and issues of scalability and standardization are still topical.
+Keywords—Routing; Handoff; IoV; VANET; Reinforcement-learning; 5G.
+
+
+
+I. Introduction
+Fast expansion of the number of connected cars and evolution toward smart transport systems have made Internet of Vehicles (IoV) a promising technology in wireless communications [1][2][3]. IoV refers to a large scale network where vehicles, Roadside Units (RSUs), pedestrians, sensors, and cloud platforms exchange data through different wireless communication technologies to ensure situational awareness and decision-making in the context of future transport systems [1][2]. As opposed to the VANET that is designed primarily for direct V2V communications within the DSRC range, IoT uses the combination of concepts of IoT and ITS 
+
+to ensure V2V, V2I, V2N, V2P and V2X communications [2][3][4][5] and allows for such things as autonomous driving, traffic management, smart parking, infotainment, environment monitoring, and cooperative sensing [3][4]. IoV unites several types of Radio Access Technologies (RATs) such as DSRC, LTE, 5G, Wi-Fi, and 6G [3][6]. These RATs together provide differentiation in QoS ranging from URLLC (latency less than 1 ms) to enhanced mobile broadband because DSRC by itself provides up to 1-10 ms delay, range from 300 to 1000 m and poor scalability [2][6][7]; cloud/edge connectivity for centralized traffic management [2]; network slicing for per-service QoS guarantees [6]; and smart-city integration for traffic control and predictive maintenance [2][3].
+
+ Fig. 1. V2X Communication Architecture in Internet of Vehicles (synthesized from [3], [4], [5]).
+
+
+However, there are unique problems faced by IoV separate from those experienced by VANETs [2][3][7]. High speeds of vehicles (50-120 km/h, over 150 km/h on highways) result in fast changes of topology, frequent link failures, and frequent network switching [2][3]. The density of traffic results in congestion which decreases scalability [2][7]. Applications are safety critical and therefore require 1-10 ms delay which is difficult to guarantee once overhead of decision-making is taken into account [2][6]. Handling handoff among various RATs while taking into account the trade-off between coverage, delay, bandwidth and energy is another issue [3][6]. Open wireless communication involving lots of participants makes IoV vulnerable to attacks including false base station, spoofing of signals, data injection attacks [2][3]. Also energy efficiency [8] and cross-technology work of DSRC, LTE, 5G and 6G [6] are required. Among the issues mentioned above, the most basic problems are routing and handoff [2][3][4][9][27].
+Routing is the process of selecting the best path through which packets are transferred through the network. Good routing algorithm provides low delay, maximum delivery of packets, bandwidth utilization and link stability [3][10]. Routing algorithms can be classified as: topology based and include either proactive (Optimized Link State Routing (OLSR), Destination-Sequenced Distance-Vector routing (DSDV)) or reactive routing (Ad-hoc On-Demand Distance Vector routing (AODV), Dynamic Source Routing (DSR)); geographical or position based; cluster based and hybrid [3][9].
+Handoff is a process of switching of active connection from one access point (AP), base station (BS) or RAT to another as a vehicle moves without causing interruption to the connection [2][3][9]. Horizontal Handoff (HHO) involves switching to another AP of the same RAT, e.g. from one LTE tower to another, or from one DSRC RSU to another [2][11]. Vertical Handoff (VHO) is performed between different RATs, e.g. DSRC to LTE or Wi-Fi to LTE [2][3][11]. The main problem of HHO is quick switching without losing packets or ping-pong effect due to frequent back-and-forth switching at high speed [2][11]. VHO is even more complicated because the networks used are very different in terms of delay, bandwidth, coverage and cost [2][11]; a proper VHO decision should take into account network side factors (bandwidth, congestion, delay, QoS), device side factors (energy level, processing load, multiradio capabilities) and application side requirements (1-10 ms for URLLC up to over 100 ms for entertainment) [2][3][11].
+Typical HH decisions utilize signal strength metrics such as RSSI, RSRP, and SINR, along with bandwidth, network load, QoS/QoE requirements, speed, cost, and energy consumption [2][11][13][15][16][22]. Having a hysteresis margin is beneficial in preventing the ping-pong problem [2][11]. Traditional HH solutions include Software-Defined Networking (SDN), which makes sure the new path is set before performing the handoff and ensures zero packet loss and 15% TCP delay reduction [5]. AI-based HH solutions include Double Deep Q-Network (DDQN) algorithm that decreases packet loss by 25.72% on the real-world Glasgow routes [16][22]; Multi-Agent DDQN approach for E2E slicing that operates close to optimality [13]; and Evolutionary Game Theory approach, which reduces handoff delay by 77.27% [15].
+In contrast to HH, the process of VHO consists of three steps, which are initiation (signal fading or high load of network detection), decision (selection between potential networks), and execution (connection maintaining QoS) [2][11], and unlike HH, may require simultaneous comparison of several RATs [2][3][11]. VHO solutions suggested so far include decision tree models with Kalman filters [10]; Markov chain based solutions with configurable fuzzy rules that decrease the number of ping-pong handovers from 19.5 to 10.65 handoffs per car [8]; Cuckoo Search/Genetic Algorithm based solution that allows for 17% throughput increase and 50% handoff delay decrease at 40 km/h [11]; Bayesian LSTM for prediction of future drops in throughput with a one-minute lead time [12]; and DDQN-based RAT selection approach reaching 97% packet reception rate compared to 66% of ITS-G5 alone [14]. Poor routing results in increased packet loss, delay, and overhead [2][3][9], while bad handoff leads to connection drops, ping-pong phenomenon, and service disruption [2][3][11], and both phenomena are particularly challenging in rapidly changing environments where decisions have to be made in fractions of seconds [2][9][11].
+AI, ML, and DL have brought about different ways of enhancing the performance of routing and handoff in IoV [2][3][12]. Classical AI is based on predefined rules and domain knowledge and is challenged by unexpected scenarios [3][12]; ML makes use of current and historical information, such as supervised algorithms that predict link quality and congestion for enabling proactive routing [2][3][12]. Multi-attribute decision-making techniques (SAW, MEW, and TOPSIS) take into account various attributes to make handoff decisions [6][8][10][11], whereas RL techniques like Q-Learning allow a car to learn a routing/handoff policy through reward and punishment [2][3][12]. Traditional ML models, however, are typically learned offline, non-adaptive, and manually select features [2][3][12].
+DL is currently the most advanced solution adopted to perform handoff and routing [2][3][12]. Deep Reinforcement Learning (DRL) combines deep learning and reinforcement learning, thereby, learning from raw data [2][3][12]; techniques such as DQN, DDQN, and Actor-Critic have been extremely effective in route decision and handoff decision [2][3][12][13][14][16]. LSTM neural network captures the temporal dynamics of links [2][3][12], while CNNs and Graph Neural Networks capture the spatial dynamics of vehicles and RSUs [3][12]. Multi-Agent Deep Reinforcement Learning makes each vehicle able to learn independently but collaboratively with other vehicles [2][3][12][13][20]. DL-based solutions are flexible to changes and do not need feature engineering but they need lots of training data and heavy computational resources [2][3][12].
+5G and the next 6G technology advance traditional as well as AI-based routing/handoff. 5G provides sub-1ms delay, maximum 20 Gbps data rate, and network slicing appropriate for different requirements of IoV [2][6] while cellular vehicle-to-everything (Cellular V2X) has PC5 (direct) and Uu (network-based) modes of operation [6], with slicing offering an additional decision about which RAT, base station, and slice should be used [6]. 6G, expected to appear after 2030, promises terahertz-frequency communication, sub-millisecond delay, and embedded AI [2][6].
+There are also several other proposals of advanced routing algorithms including multi-agent RL algorithm (DLRD) that does not need complete knowledge of network topology for its decisions [20]; hybrid AI algorithm (AHARP) that adapts its strategy based on conditions [18]; centralized routing using SDN and RL (SDCoR) [27]; congestion-aware routing by means of back-pressure and queueing information (DBDR) [19]; cluster-based routing [21][32]; position-based routing taking into account density (ARGENT) [17][29]; energy-aware beacon-power routing using Q-learning (ABPR) [25][30]; trust-based selfish node detection technique (DTSDA) [33]; and resource management framework (RM-IoV) [34]. Among all considered techniques, those based on AI [2][3][12].
+Such approaches are usually evaluated by employing simulation environments like NS-2/NS-3, SUMO, OMNeT++ and Veins for urban, highway and heterogeneous mobility models [5][9][10][16][22], where publicly available data sets such as Cologne, Munich V2I and Brno V2V enable replicability [12][16][22]. The performance is normally assessed based on the following routing parameters: PDR, End-to-End Delay, Throughput, Routing Overhead, Link Stability and handover parameters: Handover Delay, Failure Probability, Ping-Pong Rate, Service Disruption Time [2][3][9][11].
+Despite all the research work conducted, some important limitations persist [2][3][9][12]. Routing and handover are frequently analyzed separately, despite having interactions with each other [2][9]; most reviews discuss outdated approaches, rather than new ones based on AI/ML and mixed technologies [2][3][12]; and evaluation is performed via simulation more often than via real-world vehicle testing [3][11]. Potential avenues of further research include edge computing near RSUs (MEC), multi-agent systems, federated learning as an approach that preserves privacy in cross-vehicle training, and hybrid multi-radio access technology networks [2][3][12]. There is also a security challenge as AI/ML algorithms can be attacked adversarially and the use of blockchain technology in this case requires more attention [2][3], as well as a lack of common benchmarking across papers [2][3][11].
+This survey highlights the above-mentioned issues in terms of rule-based and heuristic algorithms, classical machine learning algorithms, and latest deep reinforcement learning algorithms for routing and handoff; their pros and cons; performance [1][2][3][12]; standard simulation environment and datasets; and issues related to delay, security, and IoV realization [2][3][11]. The rest of this paper is structured as follows: Section II provides the background on IoV architecture, communication technologies, routing, and handoff; Section III and IV provides the information on routing without and with AI and ML algorithms; Section V introduces HHO and VHO for handoff; Section VI deals with comparative analysis; Section VII with simulation environment and datasets; and Sections VIII-X with open problems and future directions [1][2][3][12].
+Survey Methodology
+The survey process involved an unstructured yet organized search for potential literature. Keywords such as "Internet of Vehicles", "VANETs", "routing", "horizontal handoff", "vertical handoff", "reinforcement learning", "deep learning", "5G/6G vehicular networks" were used to identify the potential articles from IEEE Xplore, ScienceDirect, SpringerLink, and Google Scholar. However, the search was limited to articles written from 2015 to 2025. Any previous fundamental works, such as DSDV, OLSR, AODV, DSR etc. were chosen to serve as background references irrespective of their publication year. The articles included had proposed or analyzed at least one method related to routing or handoff in vehicular or IoVs environments with a quantitative performance result or qualitative contribution mentioned. The articles that did not contribute anything towards vehicular network routing or handoff but instead focused on physical layer channel modeling, VANET security in general without any routing or handoff technique, non-vehicular ad hoc networks, or simulation only were excluded from the list. Thus, the search process led to identification of the 56 references used in this survey. These papers include both non-AI/ML and AI/ML-based routing/handoff techniques. Like all narrative reviews of rapidly evolving research domains, the selected papers cannot be claimed to be exhaustive and the associated shortcomings
+II. Background and Fundamentals
+A. IoV Architecture (V2V, V2I, V2X)
+Internet of Vehicles (IoV) is a next generation of a previous vehicular ad-hoc network (VANET), which involves the use of vehicles, road-side infrastructure, cloud-based system, and smart devices in a single communication network. In VANET, most communications involve the use of DSRC-based short-range communications while, in IoV, different communications technologies such as DSRC, LTE, 5G/6G, WiFi, and satellite communications are used by the vehicles to communicate with other vehicles, road side unit (RSU), pedestrians, network server, and cloud network. [1][2][3].
+Typical IoV architecture is generally represented in a three-layer architecture (see Fig. 2). The perception layer consists of sensors, cameras, radar, LIDAR, GPS, and On-Board Units (OBUs) used for gathering information about the car and environment. Network layer is the communication platform used for transmitting this information using DSRC, LTE/4G, 5G/6G, WiFi, and other wireless communications. Application layer makes this information useful by providing services like autonomous driving, traffic management, smart parking, infotainment, and environment monitoring [1][2].
+
+Fig. 2.  Three-layer architecture of the Internet of Vehicles: perception, network, and application layers, together with the five key communication paradigms (V2V, V2I, V2P, V2N, V2C) (synthesized from [1], [2], [3]).
+
+1) Vehicle-to-Vehicle (V2V)
+Vehicle-to-vehicle communication provides the capability of communicating information between nearby vehicles without using any fixed infrastructure. Vehicles use OBUs to communicate their location, speed, acceleration, direction, traffic information, and safety messages. The most important benefit of the technology is the low latency of communication that is needed for applications like collision avoidance, emergency braking, vehicle platooning, and cooperative perception. The main problem is its susceptibility to mobility since the movement of vehicles causes rapid changes in positions leading to frequent and unstable link breaks [3][4].
+2) Vehicle-to-Infrastructure (V2I)
+V2I involves vehicle communication with fixed infrastructures, such as Road Side Units (RSU), base stations, access points, and edge or cloud servers. RSUs act as gateways for more extensive network connectivity through V2I. It has larger coverage compared to V2V and offers central management of traffic, internet connection, cloud computing, edge computing, and traffic monitoring. Its major limitations include the cost of setting up the infrastructure, limited coverage, congestion, and dependence on roadside infrastructure [3][4].
+3) Vehicle-to-Everything (V2X)
+The term that covers all the above mentioned modes of communication is V2X, which includes V2V, V2I, V2P, V2N, and V2C. Through V2X, the vehicle is able to choose the most appropriate mode of communication depending on the prevailing conditions as far as application needs, networking, traffic conditions, latency, bandwidth, and reliability are concerned. The advanced form of C-V2X, known as modern Cellular V2X (C-V2X), involves communication through either direct sidelink or through cellular network; and the 5G based C-V2X is more suitable for applications that need high reliability, high throughput, and low latency [4][6].
+B. Communication Technologies (DSRC, LTE, 5G/6G)
+Effective communication is the key to IoV, which allows the instantaneous transmission of data among cars, the infrastructure, cloud servers, and users. DSRC, LTE/4G, 5G/C-V2X, and 6G are the main types of communication used [1], [2], [12], [16]. DSRC uses the IEEE 802.11p standard, while C-V2X was developed from 4G LTE and then 5G NR; the current research tends to focus more on 6G vehicular communications for meeting the requirements of autonomous driving and ITS [1], [5], [13].
+1) Dedicated Short-Range Communication (DSRC)
+DSRC is a wireless short-range technology designed especially for automotive usage, according to IEEE 802.11p standards and working at 5.9 GHz frequency. It enables direct V2V and V2I communication with minimal latency and makes it particularly suitable for safety applications like collision avoidance, emergency braking, cooperative awareness, and traffic information sharing. The main advantages of DSRC include low latency and absence of dependence on cellular network; the main disadvantages include restricted range and scalability, as the more channels are in contention and traffic is congested, the more packets will be lost or delayed. Recent literature indicates that DSRC faces problems of implementation and scalability compared to cellular V2X [2], [5].
+2) LTE / 4G
+LTE, on the other hand, offers wide-area cellular communication using base stations and the core network, offering a significantly greater range as compared to short-range DSRC. It supports web browsing, traffic information distribution, cloud connectivity, infotainment, and also infrastructure-assisted communications, and laid down the basis for LTE-V2X in which 3GPP developed direct as well as infrastructure-assisted cellular V2X [1], [13]. The benefits of LTE include the large coverage area, well-developed infrastructure, and better scalability compared to short-range communication; however, the drawbacks include increased latency and congestion susceptibility.
+3) 5G Communication and C-V2X
+Features of 5G include higher speeds, reduced latency, increased reliability, network slicing, edge computing, and support for massive numbers of devices. The evolution of C-V2X, from LTE-V2X to 5G NR-V2X, meant that it could accommodate the requirements of more sophisticated services, such as cooperative perception, vehicle platooning, automated and assisted driving, and communication in high-density environments [1], [13]. There are two different ways in which the C-V2X service operates, both of which are necessary: direct communication using the PC5 interface between the vehicles and devices, and network communication using the Uu interface through the cellular network infrastructure. The benefits of the 5G C-V2X include enhanced coverage, reliability, scalability, and support for sophisticated applications, although there remain some challenges regarding its widespread implementation, particularly related to spectrum management, interoperability, resource management, security, and mobility management [1], [13].
+4) 6G and Future Vehicular Communication
+6G is predicted to integrate communications, computation, sensing, artificial intelligence, and network intelligence into one solution that will provide ultra-reliable low-latency communications, high data rates, integrated sensing and communications, edge intelligence, and sophisticated mobility management. Some applications possible due to the above include cooperative autonomous driving, high-definition mapping, collective perception, intelligent traffic management, platooning, and sensor data sharing in real time. Current research suggests that artificial intelligence, integrated sensing and communications, high-frequency communications, digital twins, edge computing, and intelligent networking are some of the core components of future IoV [1], [13]. 6G networks for vehicular use, however, are largely a subject of ongoing research with many unresolved issues such as dynamic channel conditions, high-frequency communications, energy efficiency, security, and mobility management [1], [13].
+5) Comparison of Communication Technologies
+There is no particular technology that can satisfy all the IoV needs at all times: DSRC offers direct and low latency communication, while cellular networks offer broad coverage and integration with networking infrastructure. The characteristics of these technologies are presented in Table I [1][6].
+TABLE I.  COMPARISON OF MAJOR COMMUNICATION TECHNOLOGIES
+Technology
+Range
+Latency
+Coverage
+Main Use
+DSRC
+Short
+Low
+Limited
+V2V / V2I
+LTE / 4G
+Wide
+Medium
+Wide
+V2I / V2N
+5G / C-V2X
+Wide
+Very Low
+Wide
+Advanced V2X
+6G
+Very Wide
+Ultra Low
+Future
+Autonomous IoV
+Accordingly, contemporary IoV networks have begun using several different radio access technologies simultaneously (multi-RAT), where the vehicles can choose or combine different RATs depending on network environment, application demands, mobility of the vehicle, traffic load, and QoS needs. The issue of heterogeneity has brought about some new problems of network selection, data routing, resource allocation, mobility management, and handoff operation, which are related very much to routing and handoff issues considered later in this survey. [6].
+C. Basic Concepts of Routing in VANET/IoV
+Routing is one of the fundamental functions of VANET and IoV in which the best path through which data is transmitted from the originating vehicle to the destination vehicle/RSU/gateway/edge server/cloud is established [1][13]. Contrary to the case of traditional wireless networks, in which there are static nodes, VANET/IoV networks have mobile nodes, dynamic topology, unreliable links, dynamic node density, and various communication technologies in which a working link today may fail tomorrow. Hence, the routing protocol must be capable of providing a very high Packet Delivery Ratio (PDR), end-to-end delay, throughput, low overhead in routing, route stability, scalability, and communication resource utilization.
+The routing protocols in VANET and IoV are basically categorized into five types depending on how routing information is collected and forwarded. They include topology-based, geographic/position-based, cluster-based, congestion aware, and hybrid routing protocols [3][9].
+1) Topology-Based Routing
+Topology-based routing constructs and maintains routes using information regarding the links between network nodes, and is subdivided into proactive and reactive strategies [9].
+Proactive routing (e.g., DSDV, OLSR) maintains routing information continuously, even in the absence of active data transmission, such that a route is typically available when required. The principal drawback is that continuous updating generates substantial control traffic under high-mobility conditions [9].
+Reactive routing (e.g., AODV, DSR) constructs a route only when required, reducing control overhead relative to proactive schemes. The corresponding trade-off is additional route-discovery latency, and in highly mobile VANETs, frequent link failure can necessitate repeated route discovery [9].
+TABLE II.  COMPARISON OF PROACTIVE AND REACTIVE ROUTING
+Parameter
+Proactive
+Reactive
+Route establishment
+Continuous
+On demand
+Route discovery delay
+Low
+High
+Control overhead
+High
+Low
+Routing table
+Maintained continuously
+Created when required
+Representative protocols
+DSDV, OLSR
+AODV, DSR
+Mobility handling
+Limited
+Better than proactive
+2) Geographic / Position-Based Routing
+Geographical routing uses the geographic location of vehicles, in lieu of the entire path to the destination, to make forwarding decisions. The best-known approach to geographical routing is the Greedy Perimeter Stateless Routing (GPSR). It forwards each packet to the nearest neighboring node to the destination calculated by the distance
+d_i = √[ (x_i − x_d)² + (y_i − y_d)² ]
+(1)
+where (x_i, y_i) denotes the position of candidate neighbor i and (x_d, y_d) denotes the destination position. Because it dispenses with a full routing table, this approach is well suited to rapidly changing vehicular topologies; it is, however, heavily dependent on accurate location data and can perform poorly in sparse networks, around physical obstacles, and under urban-canyon conditions in which tall buildings obstruct GPS signals [9][17].
+3) Cluster-Based Routing
+In cluster-based routing protocol, neighboring vehicles form clusters with the help of one cluster head. By doing so, the protocol decreases the overhead cost of routing and ensures scalability within the network while working under heavy traffic conditions. As vehicles travel at a high speed, therefore, the formation and destruction of clusters occurs very quickly, and thus the problem of selecting a cluster head arises [21][32].
+4) Congestion-Aware Routing
+The goal of congestion-aware routing is to avoid routing through overloaded links and vehicles. The factors considered in congestion-aware routing include vehicle occupancy, queue size, channel occupancy, packet losses, bandwidth availability, link quality, and traffic status before deciding on the route to forward the packets. Choosing less congested paths could enhance the delivery process but due to the rapid changes in congestion, decisions made based on old data could be inappropriate [19].
+5) Hybrid Routing
+Hybrid routing uses more than one method; for instance, geographic forwarding can be used in dynamic areas, whereas infrastructure-assisted (V2V2I) forwarding is used in case an RSU is available. The hybrid approach increases reliability and coverage but adds to the protocol complexity [18].
+6) Routing Decision Parameters and Performance Metrics
+Routing is normally affected by distance, speed of vehicle, density of vehicles, link condition (SINR, packet drop, channel condition), resources left (buffer capacity, computing capability, energy), congestion (queue length, channel utilization), and road topology. Performance evaluation is done through different performance metrics[3][9].
+PDR = (N_received / N_sent) × 100
+(2)
+Throughput = Successfully Delivered Data / Transmission Time
+(3)
+PLR = (N_lost / N_sent) × 100
+(4)
+Two other standard measures are added to the above list: routing overhead, which is the extra communication needed to discover, build, maintain, and repair routes; and link/route stability, which is the period of time for which the chosen path will be useful. Latency and reliability become the main concerns when dealing with safety-critical IoV systems; scalability and congestion awareness become relevant for large traffic applications [9].
+7) Routing Challenges and Classification Summary
+High mobility and frequent link breakage — vehicles move and change direction quickly, so a chosen path can stop working almost immediately.
+Widely varying vehicle density — highways, city roads, intersections, and quiet areas all behave very differently.
+Limited bandwidth and unstable wireless links, caused by signal fading, interference, and obstacles.
+Scaling to a very large number of vehicles, while keeping routing overhead (from frequent control messages) under control.
+Security threats such as spoofing, dissemination of false information, and denial-of-service attacks.
+The need to operate across many different technologies — DSRC, LTE, 5G, Wi-Fi, and future 6G — which increases routing complexity [3][9].
+Routing protocols may also be classified in terms of other criteria such as network topology, routing technique, routing algorithm, decision making process, and communication mode, as illustrated in Table III [9].
+TABLE III.  CLASSIFICATION OF ROUTING PROTOCOLS IN VANET/IoV
+Classification Criterion
+Types
+Network structure
+V2V, V2I, Hybrid (V2V + V2I)
+Routing strategy
+Topology-based, Position-based, Cluster-based, Broadcast-based, Delay-tolerant
+Routing operation
+Proactive, Reactive, Hybrid
+Communication model
+Single-hop, Multi-hop
+Decision making
+Deterministic, Probabilistic, AI/ML-based
+Communication type
+Unicast, Broadcast/Multicast, Geocast
+There is no routing scheme that works efficiently in all VANETs/IoVs scenarios. Since the vehicular networks are highly dynamic, the routing protocol needs to take into account mobility, distance, vehicle density, link quality, congestion, road topology, and the communication technology. This very need led to the increasing popularity of intelligent routing techniques utilizing ML, DL, GNN, and RL algorithms, which will be discussed thoroughly in Sections III and IV [3][9].
+D. Fundamentals of Handoff in IoV
+Handoff (also known as handover) is the act of switching an ongoing session from one access point, RSU, base station, or technology to another, maintaining continuity of service [17], [19], [22]. It is important to consider this procedure in the context of IoV since there is constant movement across coverage areas; without a proper handoff procedure, a vehicle may encounter problems such as packet loss, discontinuity of service, increased latency, or a broken connection. The handoff procedure can be divided into three stages: initiation, decision, and execution.
+1) Handoff Initiation
+The decision about whether the handover process will take place is made during the initiation phase. The trigger for such an event could be falling signal strength, decreasing link quality, network congestion, approaching coverage area boundaries, or inability of the application to meet its Quality of Service demands. The main criteria used during this phase include RSSI, RSRP, SINR, available bandwidth, network congestion, vehicle speed, and link quality prediction [2][9].
+2) Handoff Decision
+During the decision stage, the vehicle or the network chooses the most suitable target access point or technology. In situations where all the available options utilize similar technology, the decision becomes relatively easier; in case of a heterogeneous IoV setting, however, the selection of the right option could be done using DSRC, LTE, 5G, or Wi-Fi. MADM techniques aid in this through the consideration of factors such as signal strength, bandwidth, delay, cost, network load, power consumption, and quality of service [2][9].
+3) Handoff Execution
+In the execution phase, the new link is created and any resources used for the previous network are released or kept in use. This phase usually includes authentication, security checks, resource allocation, link establishment, context transfer (session information, security data, routing information, QoS information), routing updates, and releasing or keeping the previous connection. This phase, when carried out effectively, can prevent packet loss, signaling overhead, service disruption, and handoff delay [2][9].
+
+Fig. 3.  Handoff decision process in heterogeneous VANET/IoV networks: network monitoring, handoff initiation, target-network selection, horizontal (HHO) or vertical (VHO) classification, and handoff execution (synthesized from [1], [2], [9], [11]).
+
+4) Horizontal Handoff (HHO)
+Horizontal Handoff (HHO) takes place between two access points or base stations that use the same technology (LTE-to-LTE, 5G-to-5G, DSRC-to-DSRC). As both ends use the same technology, the process becomes fast and easy to implement without delay. However, at a higher speed, a car may oscillate back and forth between two neighboring access points, and this condition is known as the ping pong effect. In order to avoid this unnecessary oscillation, hysteresis and dwell time threshold are used [2][11].
+5) Vertical Handoff (VHO)
+The vertical handover (VHO) takes place between different technologies (e.g., DSRC to LTE, LTE to 5G, Wi-Fi to 5G, and DSRC to 5G). Since there are major differences between the various technologies in terms of bandwidth, latency, coverage area, cost, reliability, and energy consumption, the process of VHO must involve making a multi-criteria decision where the aim is not just finding the highest signal strength but the best network that offers the best quality of service (QoS) for the current application.
+6) Handoff Decision Parameters
+Table IV lists the most important parameters used in the HHO and VHO decision mechanisms covered in this survey.
+TABLE IV.  IMPORTANT HANDOFF DECISION PARAMETERS
+Parameter
+Description
+RSSI / RSRP
+Received signal strength; lower values indicate a weakening serving link.
+SINR
+Signal quality relative to interference and noise; higher values indicate better link quality.
+Bandwidth
+Available communication capacity for supporting application data requirements.
+Network load
+Current utilization of network resources; indicates possible congestion.
+Latency
+Communication delay introduced by the network.
+Vehicle velocity
+Higher velocity generally results in shorter connection duration and more frequent handoffs.
+Link lifetime
+Expected duration for which a communication link will remain available.
+QoS / QoE
+Application requirements such as delay, reliability, throughput, and packet loss.
+7) Ping-Pong Effect and Hysteresis
+The ping pong effect refers to situations where a mobile node alternates between two adjacent networks due to small changes in the quality of the signal, leading to continuous cross-over of the decision threshold for handover. It results in an increase in signaling overhead, delays in handover, losses in packets, and instability in service. The solutions employed for avoiding ping pong effects include [2][11].
+A hysteresis mechanism introduces a margin whereby the target network must be substantially superior to the serving network before a handoff is triggered, rather than only marginally better. Formally, a handoff is triggered only when
+Q_target > Q_serving + H
+(5)
+where Q_target and Q_serving denote the quality of the candidate and serving networks, respectively, and H is the hysteresis margin. A larger value of H reduces unnecessary handoffs; an excessively large H, however, delays handoff execution and can degrade service quality [2][11].
+8) Relationship between Routing and Handoff
+Handoffs and routing have an intertwined relationship in the context of heterogeneous IoV systems. Handoffs affect routes, links, latency, and relaying capabilities; on the other hand, knowledge of routes can be used to predict when a vehicle is expected to move out of its coverage area. Therefore, future research on IoV networks must consider routing and handoffs as an integrated problem rather than a separate one for each; a point that will be addressed throughout Sections III–IX [2][9].
+E. AI/ML-Based Routing: Conceptual Foundations
+Routing algorithms typically depend largely on predefined rules, geographical information, network topology, or preconfigured metrics. They work well only in certain environments, but their efficiency drops as the levels of movement, density, quality of communication, and congestion change quickly [17], [19], [22]. AI and ML represent a more flexible approach: instead of using fixed rules only, an algorithm based on AI and ML finds the connections between movement of vehicles, network topology, quality of links, congestion, traffic environment, and routing efficiency, so that the chosen forwarding nodes or paths are efficient while meeting application requirements.
+1) Machine Learning for Routing
+Machine learning techniques build a model of how the conditions in the network correspond to the routing decisions based on past or present information such as the speed of the vehicle, location, inter-vehicle distance, density, link quality, packet loss, congestion, available bandwidth, and the properties of the road. After the learning phase, a model can be applied to predict link quality, routing stability, congestion, or the appropriateness of the node to forward packets. In the presence of labeled data, the most widely employed algorithms are Decision Trees, Random Forest, SVM, and ANN. The key strength of machine learning lies in its ability to find complex relations which cannot be manually formulated; its main drawback is high dependency on the presence of representative training data [2][3][12].
+2) Deep Learning and Deep Reinforcement Learning
+Deep Learning is an extension of conventional machine learning techniques in the form of multi-layer networks with the ability to learn complicated patterns from huge amounts of data. CNNs work well for spatial and grid-like data, while RNN, LSTM, and Transformer models perform better when it comes to understanding the temporal aspects of traffic and mobility data. The tradeoff is the requirement of large data sets and computation power by such models [2][3][12].
+Reinforcement Learning treats routing as a sequence of decisions. An agent — which may be a vehicle, an RSU, an edge server, or a central controller — observes the current state s_t (vehicle position, speed, density, link quality, congestion, and neighbouring vehicles), selects an action a_t (the vehicle, link, or route to use), and receives a reward r_t based on packet delivery, delay, throughput, energy, congestion, and stability. Over time, the agent learns a policy π that maximizes cumulative reward:
+π* = argmax_π E[ Σₜ₌₀ᵀ γᵗ rₜ ]
+(6)
+DRL uses the combination of RL and deep learning, whereby value function, policy, or action-value function can be approximated by using deep neural networks, making it possible for the agent to learn in big and complex state spaces that cannot be learned by tabular RL. Techniques like policy gradient, DQN, Actor-Critic, and PPO are commonly applied for intelligent routing, and all of them have the natural ability to adapt to the dynamics of mobility, congestion, and link quality[2][3][12].
+3) Graph Neural Networks
+Vehicular networks can be intuitively mapped to graphs G = (V, E), where the vehicles and infrastructure are represented by the nodes V and communication channels by the edges E. The nodes can have features like position, velocity, density, queue size, and resource availability, whereas edges can have features like distance, RSSI, SINR, packet loss rate, and estimated edge lifetime. A GNN learns the spatial patterns through message passing between neighboring nodes using a simplified graph convolution operation
+H^(l+1) = σ( D̂^(−1/2) Â D̂^(−1/2) H^(l) W^(l) )
+(7)
+where Â is the adjacency matrix with self-connections added, D̂ is the corresponding degree matrix, H^(l) denotes the node features at layer l, W^(l) are trainable parameters, and σ is an activation function. GNNs are particularly well suited to VANET/IoV, since they naturally capture spatial relationships among nearby vehicles and can update their learned representations as network topology evolves [3][12].
+4) Congestion Prediction and Green (Energy-Aware) Routing
+AI/ML techniques may predict congestion based on the density of vehicles, traffic flow, queues, channel utilization, packet arrival rate, packet loss, and network load so as to favor the longer route to the shorter one in case the former is less congested than the latter. Multiple rewards that include the following parameters may be defined:
+R = w₁·PDR − w₂·Delay + w₃·Throughput − w₄·Energy − w₅·Congestion + w₆·Stability
+(8)
+where w₁ through w₆ are weighting coefficients selected according to the application. This formulation underlies the AI-based green-routing framework discussed further in Section II.F [3][12].
+5) Hybrid AI/ML Routing and Comparative Summary
+Hybrid techniques involve more than one learning technique or AI coupled with conventional routing such that a GNN learns spatial patterns and feeds this information to an RL agent, which then decides on the routing action, or an ML-based congestion predictor that drives a standard geographic routing protocol [3][12]. Table V illustrates the main AI/ML techniques used in VANET/IoV routing.
+TABLE V.  COMPARISON OF AI/ML APPROACHES FOR VANET/IoV ROUTING
+Approach
+Primary Capability
+Major Limitation
+Machine Learning
+Prediction and classification
+Requires suitable training data
+Deep Learning
+Complex feature learning
+High computational cost
+Reinforcement Learning
+Adaptive decision making
+Reward design and training stability
+Deep Reinforcement Learning
+High-dimensional adaptive decisions
+Training complexity
+Graph Neural Networks
+Spatial and topological learning
+Graph-construction complexity
+Hybrid AI
+Combines multiple capabilities
+Higher system complexity
+AI/ML-based routing provides features such as flexibility, predictability, spatial knowledge via GNNs, dynamic decision-making through RL/DRL, multi-objective optimization, and possible better scalability. Such features come at some cost, which includes training data requirement, high computational overhead, long training time, dependence on well-designed rewards, generalization problem, lack of interpretability, and increased communication overhead for model updates across the network [2][3][12]. This explains why non-AI/ML and AI/ML routing algorithms are studied in detail in sections III and IV.
+F. Green Communication and Energy-Efficient Routing
+Green communications aim to minimize the energy and resource usage of the communication networks without compromising the QoS [20], [22], [26]. The relevance of this goal in VANET/IoV becomes clear because of the massive number of vehicles, RSUs, cell network, edge servers, and cloud infrastructure that send and process information. Conventional routing techniques prioritize PDR, delay, throughput, and overhead; however, considering only communication-related goals could lead to excessive energy usage due to increased transmission energy, re-transmission, computation, and, thus, energy. Thus, green routing considers energy as a routing parameter, making a compromise between energy efficiency and performance metrics such as reliability and latency.
+1) Sources of Energy Consumption
+Transmission energy — the energy expended in sending data packets over the wireless channel.
+Reception energy — the energy expended in receiving and processing incoming packets.
+Retransmission energy — additional energy expended in resending packets lost owing to interference or poor link quality.
+Routing-control overhead — energy expended in exchanging control packets to discover, maintain, and repair routes.
+Computational energy — the energy consumed by processors executing routing algorithms and AI/ML models.
+Handoff energy — the energy expended in network scanning, target-network selection, authentication, and connection setup [8].
+2) Energy-Aware Routing and Green Metrics
+An energy-aware routing mechanism balances remaining energy, transmission power, distance, link quality, packet loss, and expected route lifetime. A simplified energy-aware routing cost can be expressed as [8]
+C_energy = α·E + β·D + γ·L
+(9)
+where E is the estimated energy consumption, D is the communication distance, L is a link-quality-related cost, and α, β, γ are weighting coefficients. Green routing performance is typically assessed jointly through energy consumption, remaining energy, transmission distance, link quality, PDR, end-to-end delay, and routing overhead, treated as a multi-objective optimization problem:
+R = w₁·PDR + w₂·Throughput + w₃·Stability − w₄·Delay − w₅·Energy − w₆·Congestion
+(10)
+3) AI/ML and GNNs for Green Routing
+Machine Learning can predict link quality, congestion, and energy needs based on information such as position of the vehicle, velocity, density, distance, available energy, link quality, loss ratio, congestion, power of transmission, and route lifetime. Additionally, Reinforcement Learning can also learn energy-aware routing algorithms based on rewards for successful packets, high-quality links, and penalties for congestion and unnecessary energy expenditure:
+R_t = w_p·PDR_t − w_d·Delay_t + w_t·Throughput_t − w_e·Energy_t − w_c·Congestion_t + w_s·Stability_t
+(11)
+Graph Neural Networks have an added advantage in green IoV routing due to the graph nature of the vehicles and RSUs. This is because node features such as speed, position, energy remaining, queuing time, and node density can be encoded into spatial representations using the GNN along with edge features such as distance, RSSI, SINR, packet losses, link duration, and energy expenditure [8][20].
+4) AI-Based Green Routing Framework and Open Challenges
+An instance of AI-based green routing involves four main steps, including: (i) data collection related to vehicle and network parameters; (ii) feature representation, like using graph nodes for vehicles and graph edges for links; (iii) intelligent routing decision where the model decides on which node or route to forward; and (iv) performance optimization based on evaluation of the selected route on energy, PDR, delay, throughput, congestion, and stability aspects [8][20].
+However, several open problems exist, such as the energy conservation-QoS maintenance dilemma, fast obsolescence of energy-efficient routes due to high node mobility, varying network densities, link instability which adds energy consumption to the retransmission process, the computation costs associated with the AI models, sensitivity of multi-objective rewards design, necessity of real-time decision-making, generality of traffic situations, and the increasing difficulty of multi-RAT heterogeneous networks. The existing green-routing schemes are limited in their optimizations to only a few parameters, such as transmission energy, distance, and PDR. In fact, the optimization problem can be expanded to consider mobility, distance, available energy, link condition, congestion, and reliability. Thus, the integration of GNN-based spatial representation with reinforcement learning and multi-objective green rewards forms an appealing approach to energy-aware IoV routing, a topic elaborated further in Section IX [8][20].
+III. Non-AI/ML-Based Routing Mechanisms in IoV
+Unlike AI and ML routing schemes, the non-AI and ML routing methods make use of predefined policies, mathematics, topological data, geographical data, or heuristic techniques in place of learned representation schemes. The non-AI and ML routing techniques are less resource-intensive, thus can be used effectively in vehicular communications, but owing to the high mobility of vehicles, frequent network topological changes, connectivity interruptions, and the dynamic nature of traffic conditions, stable routing is not easily achieved in large IoV environments [17], [19], [21].
+Non-AI/ML routing mechanisms can be broadly classified into topology-based, geographic-based, congestion-aware, cluster-based, and hybrid routing approaches [17], [19], [21], as summarized in Fig. 4.
+
+
+Fig. 4.  Classification of routing protocols in VANET/IoV according to network structure, routing strategy, routing operation, decision-making mechanism, and communication type (synthesized from [17], [19], [21]).
+
+A. Topology-Based Routing in IoV
+Topology routing makes use of topological information about connectivity between the nodes within the network, which is exchanged either periodically or on demand and is further classified into proactive and reactive schemes [17], [19], [21].
+Proactive routing schemes like DSDV and OLSR keep their routing table updated at all times, providing for low route discovery delay but with high control overhead, which is one of its main disadvantages when considering the number of changes to topologies in IoV networks. In the case of reactive routing schemes, like AODV and DSR, routes are created only on demand, thereby cutting down on the control overhead but causing route discovery delay and making the route susceptible to failure due to mobility.
+B. Geographic (Position-Based) Routing
+Geographic routing is a forwarding scheme that makes use of the positions of vehicles, normally determined using the Global Positioning System (GPS), in place of full routing tables [20], [22], [27]. The method suggested by Mazouzi et al. [17] for geographic routing in the IoV is ARGENT, which is an agent-based approach taking into account the position of vehicles, density of traffic, and structure of roads. Geographic routing offers such benefits as no need for routing tables, scalability, suitability for dynamic environments, and decisions based only on local information; among its disadvantages are sensitivity to errors of positioning systems and to GPS error in particular.
+C. Congestion-Aware Routing
+In congestion aware routing, current traffic and network congestion are taken into account prior to the decision-making process in determining a path to forward packets. DBDR is one such example of congestion aware routing that was developed by Han et al. [19]. The algorithm uses back pressure approaches and queue backlog differences to favor connections in which the difference between upstream and downstream queue states suggests efficient transmission. Benefits include lower congestion and packet loss, while the disadvantage involves extra computation and longer paths in sparse networks.
+D. Cluster-Based Routing
+Cluster-based routing divides all the vehicles into clusters, where each one has a cluster head and some members; the cluster head handles communication and coordination between different clusters in order to minimize direct communication among all vehicles. The example of target tracking cluster routing presented by Kulanthaiyappan et al. [21] can be considered the sample of this strategy. Pros of the approach include low routing cost, scalability, structure of communication, and efficient management of dense networks. Cons include cluster reformation and choosing cluster heads under high dynamics conditions.
+E. Hybrid Routing
+Hybrid routing is the combination of one or more routing techniques that benefit from the strength of each other, for instance, the combination of topology-based routing and geographic routing, or V2V and V2I communication [21], [31], [32]. A good example of hybrid routing technique is V2V2I routing: if a V2V connection is not reliable or not available, then the method uses the help of an RSU to  transmit the message. The major disadvantage of hybrid routing is its complexity because of the switching procedure.
+F. Challenges in Non-AI/ML Routing
+Although computationally simple and well understood, traditional routing protocols face several persistent challenges in highly dynamic IoV environments [18], [25], [27]:
+Frequent route failures from continuous changes in vehicle position and speed.
+Dynamic network topology as vehicles enter and leave neighbouring communication range.
+Scalability limits when maintaining routing information for thousands of simultaneously communicating vehicles.
+Congestion from high vehicle density, increasing packet loss, queueing delay, and retransmissions.
+Limited adaptability, since predefined rules do not learn from previous network conditions.
+Location-accuracy dependence for geographic routing, affected by GPS error, signal blockage, and urban canyons.
+Non-AI/ML methods are the basis of VANET/IoV routing, where topology-based routing uses connectivity knowledge, geographic routing uses location, congestion-based routing uses network load, cluster-based routing clusters vehicles, and hybrid routing combines different methods [17], [19], [22]. The simplicity of their operation is useful; however, their need for a priori set rules makes them inflexible in changing environments, which is the very reason for considering AI/ML-based routing techniques discussed in the following section.
+IV. AI/ML-Based Routing Approaches in IoV
+AI and ML algorithms enhance routing efficiency by using real-time and past information from the network, rather than relying on pre-defined policies and metrics. IoV systems have very dynamic behavior due to factors such as mobility of vehicles, changes in the topology of the network, variation in traffic load, intermittency, and change in the link conditions; AI and ML algorithms use vehicle location, velocity, traffic load, link quality, congestion, and network loads to take more adaptive decisions for routing. The RL technique enables vehicles or the controller of the network to learn routing policies by interacting with the environment. Similarly, supervised learning is used to predict traffic, link quality, and congestion[2][3][12].
+A. AI/ML-Based Topology Routing
+AI and ML methods enhance topology-based routing because they learn how the network status and the routing decision are related, so that an intelligent agent decides on which vehicle should be the next-hop based on the current conditions. Some of the key inputs are position of the vehicle, velocity of the vehicle, link status, neighboring vehicles density, bandwidth, congestion, and route stability [17], [19], [22].
+AI can be combined with proactive routing and can anticipate topology changes and updates routing tables before any link breaks down, or with reactive routing and can choose intelligent next-hop vehicles when discovering routes, taking into account not only link stability and mobility but also congestion and communication performance instead of hop count or distance. The basic routing scheme can be described using the tuple
+sₜ → aₜ → rₜ → sₜ₊₁
+(12)
+where s_t is the current network state, a_t the routing action, r_t the reward, and s_{t+1} the next state [18][20][22].
+Representative AI/ML Topology-Routing Techniques
+Lin et al. [20] proposed DLRD (Distributed Learning-Based Routing), a multi-agent reinforcement learning approach for distributed routing decisions, in which each vehicle independently selects next-hop nodes without requiring complete global topology information — well suited to IoV, where centralized topology knowledge is difficult to maintain, though multi-agent learning introduces high computational and training complexity.
+Park et al. [22] proposed RHRA-DRL, which applies Deep Reinforcement Learning to improve link stability and route recovery, predicting possible link failures and proactively rerouting traffic before links become unavailable, improving route stability at the cost of training overhead.
+Mazouzi et al. [18] proposed AHARP (Adaptive Hybrid Agent-Based Routing Protocol), which combines reactive and proactive strategies, dynamically selecting the appropriate mode according to network conditions — proactive routing when conditions are stable, reactive routing when topology changes rapidly — achieving lower end-to-end delay than either strategy alone.
+Wang et al. [27] proposed SDCoR (Software-Defined Cognitive Routing), which integrates SDN with reinforcement learning to provide centralized control with a global network view, enabling network-wide optimization at the cost of infrastructure dependence and additional control overhead.
+B. AI/ML-Based Geographic Routing
+AI/ML can help optimize geographic routing by taking into account not just the geography of the vehicle, but also its mobility, traffic density, road topology, link quality, and predicted movements. An intelligent system can choose not the geographically closest vehicle, but the one that provides better route stability and performance, say through a routing metric
+Sᵢ = w₁·Pᵢ + w₂·Lᵢ + w₃·Qᵢ − w₄·Dᵢ − w₅·Cᵢ
+(13)
+where P_i is geographic progress, L_i predicted link stability, Q_i link quality, D_i distance, C_i congestion for candidate vehicle i, and w₁,…,w₅ are weighting parameters [20], [22], [26].
+Mobility Prediction, Congestion-Awareness, and GNNs
+ML models can learn mobility patterns from historical trajectories, speed, direction, and road information, estimating whether a candidate forwarding vehicle is likely to remain within range and thereby improving route stability. AI/ML congestion prediction — using vehicle density, traffic flow, queue length, communication load, and road conditions — allows geographic routing to avoid congested regions, improving throughput and reducing packet loss and delay in dense environments.
+Graph Neural Networks provide a natural framework for spatial relationships between vehicles: representing vehicles as nodes and communication relationships as edges, G = (V, E), a GNN learns spatial representations of local vehicular topology that a routing agent can subsequently use to select a forwarding vehicle. Reinforcement Learning can likewise select next-hop vehicles from the current geographic and network state — positions of neighbours, velocity, link quality, congestion, and destination distance — with a generalized reward
+R_t = w_p·PDR_t − w_d·Delay_t + w_T·Throughput_t − w_C·Congestion_t + w_S·Stability_t
+(14)
+The learned policy thereby selects forwarding vehicles offering better long-term performance rather than simply the nearest neighbour [17][20][22].
+C. Comparison and Limitations
+Table VI summarizes the major AI/ML-based routing techniques discussed in this section [17], [23], [26].
+TABLE VI.  COMPARISON OF AI/ML-BASED ROUTING TECHNIQUES
+Method
+Technique
+Advantage
+Limitation
+DLRD [20]
+Multi-agent RL
+Adaptive distributed routing
+High complexity
+RHRA-DRL [22]
+DRL
+Improved link stability
+Training overhead
+AHARP [18]
+Hybrid AI
+Lower delay
+Complex design
+SDCoR [27]
+SDN + RL
+Global optimization
+Infrastructure dependency
+HHO-based clustering [26]
+Optimization (Harris Hawk)
+Improved clustering
+High computation cost
+GNN-based routing
+Graph learning
+Spatial representation
+Graph-construction complexity
+Even with the adaptive decision-making through AI/ML routing algorithms that are offered, there are still challenges associated with this approach [20], [22], [26]. These challenges include the difficulty of computing deep learning, DRL, and GNN models, high energy consumption due to computing (especially on constrained devices), dependency on the quality of training data, large overhead training process in RL/DRL algorithm, decision-making in real time with the availability of the disappearing communication channels, and effectiveness of the model in varied density and traffic conditions.
+In conclusion, some examples of Deep Reinforcement Learning models include DLRD and RHRA-DRL that facilitate adaptive routing and link stabilization, hybrid models include AHARP model that uses different routing methods, SDCoR which is an amalgamation of SDN and reinforcement learning for centralized intelligent routing, and optimization techniques such as the Harris Hawk Optimization. On the other hand, geographical routing algorithms use artificial intelligence and machine learning algorithms to consider mobility, link quality, congestion, and future positions of vehicles during packet forwarding. Although GNN is very promising for modeling the relationship between vehicles and links, computational cost, energy cost, training cost, data dependency, and generalizability are still challenges [20], [22], [26].
+V. Handoff Mechanisms in IoV
+Handoff, or handover, is the process that is extremely important and complicated in vehicular communication systems. In order to provide continuous connectivity while the vehicle moves at a very high velocity in heterogeneous network environment, the techniques that would be able to detect the necessity of switching to another network, select an appropriate target network, and switch in the least disruptive way are needed. The inability of proper handling of handoffs causes increased loss of packets, delays and service disruption, which is why handoff is studied as much as routing in IoV [1][2][9][11]. 
+A. Types of Handoff
+In IoV, there are two kinds of handoffs: HHO and VHO [1][2]. It all depends on whether the vehicle connects to the same wireless technology or changes to another wireless technology. Handoff can be carried out in three steps. These steps include: initiation, which means that the network or vehicle realizes that there is a need for switching the connection for some reason, such as a weak signal; decision, which refers to choosing the most suitable target access point or network depending on the decision parameter; and finally, execution, which implies the transferring of the connection to the new access point or network without data loss [2][9].Fig. 5 illustrates the difference between horizontal and vertical handoff.
+
+
+Fig. 5. Horizontal Handoff vs. Vertical Handoff in IoV (synthesized from [1], [2], [9]).
+
+Horizontal Handover takes place when a mobile device transits from one access point to another using the same Radio Access Technology (RAT). This could mean moving from one LTE access point to another LTE access point or one DSRC access point to another [1][2]. Since both access points have the same technology underneath, HHO is easier compared to VHO. However, it must be quick since the mobile device can go out of range of an access point within seconds. In HHO, the major issue is how quickly the switch is done to avoid packet drop and unnecessary handovers known as ping pong [2][8].
+A vertical handoff occurs where the vehicle travels from one access point to another access point where they operate different RATs, such as from DSRC to LTE or from LTE to 5G [1][2][3]. VHO is a complicated process compared to HHO, as the two networks may differ greatly on data rates, delay, coverage, and costs, and thus the decision should not be based on signal strength alone. Both Midya et al. [2] and Elsayed et al. [1] observe that decision making about VHO in the context of vehicular networking involves the combination of several parameters due to the nature of various RATs being good for different purposes, such as DSRC for safety-related short-range communications, and 5G/LTE for entertainment. There are several studies related to decision making about VHO in the context of 5G-based IoV networks where decision-making algorithms take into account several network and QoS attributes at once.
+B. Handoff Decision Parameters
+However, determining when and where it will take place is not an easy procedure due to a variety of criteria involved in this process, which can vary rapidly depending on the movement of the vehicle [1][2][6].
+The most popular criteria involved in the handoff decision making process may be described as follows.
+The most popular handoff decision criteria are different signal strength measurements: Received Signal Strength (RSS), Received Signal Strength Indicator (RSSI), Reference Signal Received Power (RSRP), and Signal-to-Interference-plus-Noise Ratio (SINR) [1][2][6][8]. In order to trigger a handoff, the signal strength of the current connection should fall under a threshold value while the neighbour's access point provides a stronger one. However, the use of the only fixed threshold can lead to an undesired ping-pong effect caused by the continuous switching from one cell to another located nearby while driving around its border area. In order to avoid this effect, most of the approaches include hysteresis margin [2][8].
+It might also happen that even with high signal strength, the target network already has too much traffic from too many connected vehicles, resulting in poor performance immediately after handoff. In light of this, some of the decision-making systems also factor in the load of the network and the amount of bandwidth offered by each potential access point [1][6][13]. Wu et al. [13] demonstrate that in network-sliced heterogeneous networks, lack of knowledge of the load during the decision making process leads to redundant handoffs and unbalanced network loads between roadside units and base stations.
+IoV applications have varying requirements in terms of service level. For example, safety-critical communications require low latency and high reliability, whereas infotainment applications require high throughput [1][2]. This implies that handoff decision systems take into consideration such QoS parameters as latency and jitter, as well as QoE, meaning quality of experience, which is the actual perception of the link by the end user [6][9]. Goutam et al. [6] and Odabaşı et al. [9] explicitly include QoS-related metrics in their handoff decision frameworks to guarantee the ability of the selected network to meet the demands of the application.
+The actual handover decisions will have to consider the financial costs, as employing the cellular network like LTE or 5G network would be much more costly compared to DSRC and Wi-Fi that employ the unlicensed frequency band [2][9]. The issue of energy consumption is also an important one, because scanning and changing the networks uses up the energy [1][2]. Multi-Attribute Decision Making (MADM) techniques, as mentioned in Section E below, can be employed to merge all these considerations along with the signal strength, load, quality of service/experience, cost, and energy issues in one handover decision [6].
+C. Non AI/ML-Based Horizontal Handoff Techniques
+Prior to the introduction of AI and ML solutions in this area, the horizontal handoff was performed mostly by means of deterministic policies, mobility management approaches and network architecture design methods. Such non-AI/ML approaches remain promising due to their lightness, determinism and the absence of need in training data [1][2][5].
+Midya et al. [2] provide an overview of several mobility management approaches which have been used in vehicular networks for horizontal handoff. Network Mobility (NEMO) is a protocol that gives vehicles Mobile Router and allows for preparation of handover in advance due to communication between the vehicles via V2V channel. In order to improve the Duplicate Address Detection, which is one of the steps of IPv6 address assignment and causes additional handoff delay, the Real Bus and Virtual Bus schemes employ coordination between the vehicles preceding and following the point of handoff. The Gateway-based Mobility Management (GMM) approach uses hierarchical network structure and Layer-2 triggers in order to allow the lower layer to notify the upper layers about approaching handover in time and reduce the handoff delay [2].
+An alternative technique to AI/ML, developed more recently, involves Software Defined Networking (SDN) where the goal is to proactively carry out the horizontal handoff. This technique is described in [5], where Dias et al. designed a software-defined vehicular network wherein roadside units are SDN switches. Based on position, orientation, speed, and RSSI measurements contained in standard Cooperative Awareness Message (CAM) messages of C-ITS protocol, an SDN controller estimates the next required access point for each vehicle and prepares its forwarding path beforehand. The network path is thus established ahead of time, resulting in a near-zero packet loss rate and up to 15% reduction of average TCP delay relative to a reactive handoff [5]. It is worth noting that this technique does not involve any learning algorithms; it only applies rule-based deterministic reasoning based on position data.
+
+Fig. 6. Classification of Non-AI/ML Horizontal Handoff Techniques (synthesized from [1], [2], [5]).
+
+D. AI/ML-Based Horizontal Handoff Techniques
+As vehicular networks have been getting more complicated, machine learning methods, particularly reinforcement learning algorithms, have become increasingly popular in order to enable automatic and adaptive handover strategies in response to environmental conditions [13][15][16].
+Tan et al. [16] developed an innovative DDQN-based vehicle-to-network (V2N) handover approach. In contrast to traditional comparison of signal strength for each access point, the DDQN handover method combines the RSRP readings from all neighboring base stations into one input value, enabling the training process of the agent to take into account all available options at once. The handoff penalty term is introduced into the reward function in order to prevent the agent from switching the network frequently and hence reduce the ping-pong problem. After the training and testing on the simulated realistic vehicular paths from Glasgow city center via the ns-3 network simulator, 25.72% decrease in average packet loss per handover and 11.56-second earliness of triggering handoffs compared to traditional approaches have been obtained [16].
+The problem addressed by Sharma et al. [15] is slightly different from that of HHO. Specifically, if a large number of vehicles decide to perform handover to a single cluster head or access point, that access point might experience overload. They model the handoff target selection process using Evolutionary Game Theory (EGT). Namely, each vehicle is viewed as a player in EGT whose goal is to select the best access point taking into account the strategies of other players. The use of game theory for target selection led to 77.27% decrease of the average handoff delay compared to some simple selection rules [15]. Wu et al. [13] offer a solution to the problem of horizontal handoff in networks where network slicing is employed. Namely, each vehicle is not only required to select the proper access point but also needs to be assigned to the proper slice. They formulate the problem in terms of decentralized Markov decision process (DEC-MDP). They then solve the problem by employing multi-agent Double Deep Q-Network with Horizontal Handoff (MA-DDQN-DH). Each vehicle is trained to learn its own handoff strategy without any centralized controller making decisions for it [13].
+E. Non AI/ML-Based Vertical Handoff Techniques
+Methods without AI/ML for vertical handoff rely on structured decision-making algorithms that apply mathematics to multiple network features, and not a learned policy. They are more understandable and can be verified more easily, an advantage in vehicular applications where safety considerations are at stake [6][10][11].
+ Goutam et al. [6] applied and compared three classic MADM methods for the practical problem of 4G to WLAN vertical handoff: Simple Additive Weighting (SAW), Multiplicative Exponential Weighting (MEW), and the Technique for Order Preference by Similarity to Ideal Solution (TOPSIS). The above-mentioned MADM methods rate the available networks with respect to multiple criteria simultaneously and select the network with the highest combined rating. According to the research conducted by Goutam et al., the TOPSIS method returned the clearest results, rating the WLAN at 0.907 compared to 4G's 0.093, which means it clearly favored WLAN without any reservations, while the other two MADM methods returned much closer ratings [6].
+The study by Ma et al. [10] describes a decision tree as the way of making a vertical handoff decision since the decision tree is a rule-based method of decision making that takes a complex decision and breaks it down to a set of simple tests, beginning with signal strength, then load, then cost, and so forth until a decision regarding the network to choose is made. Since the decision process of a decision tree can be analyzed step-by-step, this means that the handoff decision becomes easier to understand and justify than in learning-based approaches, which are black boxes [10].
+CSVAG algorithm is a hybrid optimisation approach proposed by Jha et al. [11] that is a combination of Cuckoo Search and Genetic Algorithm to find the optimal vertical handover decision for achieving optimal performance of the network. The Cuckoo Search performs a broad exploration of the space of decision, whereas the Genetic Algorithm focuses on the refinement of promising decision. Thus, the combination of both algorithms can be useful to escape from local optima of decision. Compared with individual use of each algorithm, the hybrid approach increased throughput by 17% compared to the use of Cuckoo Search and 8% compared to the Genetic Algorithm, and also decreased handoff delay by 50% at the speed of the vehicle of 40 km/h [11]. Despite the fact that the optimisation search is used in the CSVAG algorithm, no learning from the historical data takes place like in AI/ML algorithms; therefore, it is a non-AI/ML metaheuristic approach.
+
+
+Fig. 7. Classification of Non-AI/ML Vertical Handoff Techniques (synthesized from [6], [10], [11]).
+
+F. AI/ML-Based Vertical Handoff Techniques
+Recent developments in IoV have witnessed AI and machine learning, especially deep reinforcement learning, being employed as the primary technique in vertical handoffs since they are able to accommodate dynamic changes in the network environment [3][8][9][12][14].
+The M-VHO method, designed by Ma Bin et al. [8], is based on the idea of modeling the state of each possible wireless network as a discrete Markov chain and integrating it with dynamic fuzzy weighting, where the relative weight for each decision parameter can be adjusted automatically. This approach significantly improves performance when compared to the previous approach known as NF-VHDA. M-VHO resulted in an 145% reduction in average packet loss, while the number of ping-pong handoffs per vehicle was reduced from 19.5 to 10.65[8].
+A hybrid VHO algorithm named Dynamic Q-Learning along with Fuzzy Convolutional Neural Network and Jellyfish Optimisation Algorithm is presented by Pramod Kumar P et al. [3]. While the fuzzy convolutional network deals with the uncertainty present in network measurement, Q-Learning learns which network to select over time based on experience, and Jellyfish Optimisation Algorithm optimizes the whole procedure. These algorithms combined have been found to decrease unnecessary handoffs by 25% as compared to traditional VHO algorithms [3]. Yacheur et al. [14] implemented VHO in hybrid ITS-G5 and Cellular V2X (C-V2X) architectures using DDQN agent that chooses one out of four communication modes in real time. In the presence of high network congestion, this system managed to achieve packet reception rate of up to 97% as against 66% when ITS-G5 was used alone, while reducing unnecessary message sending rate by 80% [14].
+Odabaşı et al. [9] introduced the idea of a proactive vertical handover strategy using machine learning algorithms to be used in the hybrid Li-Fi/Wi-Fi vehicular network, whereby the algorithm predicts in advance that there will be a blockage in the Li-Fi link due to factors such as the blocking of the light source by other vehicles and then proactively switches to Wi-Fi. The proactive switching resulted in available data rates of up to 280 times more compared to only using Wi-Fi connections, with the service disruption level being maintained at less than 5% [9]. Skocaj et al. [12] extended this predictive method even further by implementing a Bayesian LSTM network which predicts a drop in uplink throughput a minute before the actual drop and also gives the confidence level of each prediction made.
+VI. Comparative Analysis
+The routing and handover techniques presented in Sections III-V vary widely in terms of adaptability, complexity, scalability, interpretability, and real-time applicability. The AI/ML-based techniques tend to have good adaptability capabilities due to their learning capabilities of the network and mobility information, especially Deep Reinforcement Learning, which shows much promise in both HHO and VHO techniques [13][17][22].
+A. Comparison of Routing Approaches
+Topology-based approaches offer a simple way of establishing routes but can experience many route failures due to topology changes; geographic routing does not require keeping a routing table and works well in a dynamic environment; congestion-aware routing takes network load into consideration; and cluster-based routing enhances scalability via clustering [17], [19], [22]. AI/ML approaches introduce an additional level of adaptivity by learning dependencies between network state and routing decision, with RL allowing dynamic action selection, and GNNs allowing spatial relations between vehicles modeling.
+TABLE VII.  COMPARISON OF ROUTING APPROACHES IN IoV
+Approach
+Information Used
+Advantages
+Limitations
+Topology-based
+Network links and topology
+Simple and established
+Frequent route failures
+Geographic
+Vehicle position
+Scalable and dynamic
+Location dependency
+Congestion-aware
+Queue and network load
+Reduces congestion
+Additional computation
+Cluster-based
+Vehicle groups
+Improved scalability
+Cluster instability
+AI/ML-based
+Network and mobility features
+Adaptive decisions
+Training complexity
+GNN-based
+Graph topology, node/edge features
+Spatial intelligence
+Graph-construction complexity
+DRL-based
+Network state and rewards
+Adaptive optimization
+High training overhead
+B. Comparison of Handoff Approaches
+On the other hand, classical Multi Attribute Decision Making (MADM) approaches provide clear decision making with minimal computational complexity needs, yet at the cost of using predetermined weights and poor flexibility in coping with unknown situations [17], [20], [22]. In turn, handoffs based on AI/ML are more flexible since deep reinforcement learning algorithms learn handoff policies from interaction with the environment, while predictive machine learning models predict future network state.
+TABLE VIII.  COMPARISON OF HANDOFF APPROACHES IN IoV
+Approach
+Type
+Strength
+Limitation
+Threshold-based
+Non-AI/ML
+Simple
+Limited adaptability
+MADM
+Non-AI/ML
+Interpretable
+Weight dependency
+Fuzzy Logic
+Non-AI/ML
+Handles uncertainty
+Rule complexity
+Metaheuristic
+Non-AI/ML
+Good optimization
+High computation
+Machine Learning
+AI/ML
+Predictive
+Training dependency
+DRL
+AI/ML
+Highly adaptive
+Training overhead
+Bayesian LSTM
+AI/ML
+Predictive QoS
+Model complexity
+C. AI/ML versus Non-AI/ML: Adaptability, Cost, and Deployment
+The major distinction between the AI/ML techniques and the non-AI/ML schemes is their adaptiveness to changes in the network environment [1], [13], [16]. The non-AI/ML methods apply fixed thresholds, fixed weights, geographical information, or optimization algorithms — fast and easy to interpret, but less effective in case of deviation from the assumptions made during their design. The AI/ML techniques utilize historical or current observations for adjusting their decisions depending on mobility, congestion, traffic load, and many other changing factors.
+TABLE IX.  SUMMARY COMPARISON OF AI/ML AND NON-AI/ML APPROACHES
+Parameter
+Non-AI/ML
+AI/ML
+Adaptability
+Low to moderate
+High
+Computational cost
+Low
+Moderate to high
+Training requirement
+None
+Usually required
+Interpretability
+Generally high
+Can be limited
+Dynamic-environment performance
+Limited adaptation
+Better adaptation
+Real-time feasibility
+Generally high
+Model-dependent
+Scalability
+Protocol-dependent
+Model-dependent
+Decision mechanism
+Predefined rules
+Learned policy / model
+D. Adaptability, Computational Complexity, and Real-World Validation
+Due to vehicle mobility, there is fast changing in topology, connectivity links, traffic density, and load on the network; classical routing algorithms might need route updates frequently as a result of changing situations [1], [22], [26]. The use of AI/ML solutions, and specifically of Deep Reinforcement Learning, will allow the utilization of real-time data to adapt the agent’s behavior dynamically, the routing or handoff agent getting better policy through interaction with the environment, which was found promising in the surveyed literature.
+Computational complexity still needs to be taken into account, since there is a requirement for completing routing and handoff in very small time periods [13], [20], [22]. Traditional approaches rely on rules and do not involve much computation and are thus efficient enough even on resource-limited equipment, while DRL, GNN and other deep learning models demand extra computation to conduct inference, and sometimes even training, so when using AI/ML, one should take into account the improvement in performance.
+The effectiveness of AI/ML techniques is contingent on the quality and representativeness of their training data [22], [26]. The learned model based on specific traffic density, mobility behavior, network topology, and communication technology may not generalize well in a new setting. All previous research has utilized simulated evaluation, while real-world measurement-based evaluations have been relatively rare, with examples being found in [5], [6], and [12]. Simulations provide controllable and reproducible results, but do not account for practical issues like wireless interference, limitations of hardware, unforeseen mobility behavior, and heterogeneous deployment – all of which necessitate a greater use of measurement-based evaluations, which are further discussed in Section VIII.
+E. Overall Trade-Off and Summary
+There is no such mechanism that can be considered ideal for all scenarios in the IoV domain [5], [12]. The classical mechanisms are simple, easy to compute, and understandable; AI/ML mechanisms are more flexible at the expense of higher cost in terms of training and computations; DRL mechanisms provide flexibility but need much training data; and metaheuristic hybrid mechanisms have the ability of exploring and refining but can suffer from scalability issues. Thus, an effective IoV mechanism must take into account all these factors along with others.
+In general, non-AI/ML techniques are simple, interpretable, and require little computation, while AI/ML techniques are more flexible in a dynamic vehicular environment [13], [17], [22]. There is much potential for DRL techniques in making adaptive routing and handover decisions, but the issues of training data, computation, and real-time deployment have to be taken into account. Classical MADM techniques are still desirable in cases where interpretablility and simplicity are important; and hybrid techniques give another option, with the downside being a lack of scalability and increased implementation difficulty.
+F. Quantitative Summary of Reported Results
+Sections III–V report method-specific quantitative outcomes as originally stated by each study; Table X consolidates these figures into a single comparison, since the qualitative comparisons in Tables VI–IX do not capture the actual magnitude of improvement each method reports. Because the underlying studies use different baselines, traffic scenarios, and evaluation environments, the entries below should be read as indicative of each method’s reported gain over its own baseline rather than as a head-to-head ranking across papers, and the sparse “Not reported” entries in the Simulator/Dataset column reflect a real limitation identified in this survey: several primary studies do not disclose their evaluation environment in enough detail to be independently reproduced.
+TABLE X.  QUANTITATIVE RESULTS REPORTED FOR SELECTED HANDOFF MECHANISMS
+Ref.
+Method
+Metric
+Reported Result
+Simulator / Dataset
+[16]
+Tan et al. – DDQN handoff
+Packet loss
+25.72% reduction
+ns-3, Glasgow routes
+[15]
+Sharma et al. – EGT target selection
+Handoff delay
+Up to 77.27% reduction
+Not reported
+[13]
+Wu et al. – MA-DDQN-DH
+Overall performance
+Near-optimal under moderate load
+Not reported
+[5]
+Dias et al. – SDN-based HHO
+Packet loss / TCP delay
+~0% packet loss; ~15% lower delay
+Real-world deployment
+[6]
+Goutam et al. – MADM (TOPSIS)
+Network selection score
+TOPSIS: 0.907 (WLAN) vs 0.093 (4G)
+Real-world 4G/WLAN testbed
+[8]
+Ma Bin et al. – M-VHO
+Packet loss / ping-pong rate
+~145% packet loss reduction; 19.5→10.65 ping-pong handoffs
+Not reported
+[11]
+Jha et al. – CSVAG
+Throughput / handoff delay
++17% vs Cuckoo Search; +8% vs GA; −50% delay at 40 km/h
+Not reported
+[3]
+Pramod Kumar P et al. – Hybrid VHO
+Unnecessary handoffs
+25% reduction
+Not reported
+[14]
+Yacheur et al. – DDQN RAT selection
+Packet reception / redundancy
+97% vs 66% (ITS-G5 only); −80% redundant messages
+Not reported
+[9]
+Odabaşı et al. – ML proactive VHO
+Data rate / service interruption
+Up to 280× higher data rate; <5% interruption
+Not reported
+
+G. Bibliometric Overview of Reviewed Literature
+To give readers a sense of how the literature underlying this survey is distributed, Fig. 8 summarizes the 56 references by publication year and by methodological category. Fig. 8(a) shows that the reviewed literature is concentrated in the last four years (2022–2025, 40 of 56 references), consistent with the field’s rapid recent growth, while a small set of earlier foundational works (2015–2018) are retained for background context. Fig. 8(b) shows a near-even split between AI/ML-based approaches (22 references, 49%) and non-AI/ML, rule-based, or classical optimization approaches (23 references, 51%); this split reflects that both paradigms remain active areas of IoV research rather than AI/ML having fully displaced classical methods, and is consistent with this survey’s decision to cover both categories side by side in Sections III–V.
+
+Fig. 8. (a) Distribution of reviewed references by publication year and (b) split between AI/ML-based and non-AI/ML approaches across the 56 references reviewed in this survey.
+
+
+
+VII. Simulation Tools, Datasets, and Performance Metrics
+Simulation plays a central role in evaluating routing and handoff mechanisms in IoV, since real-world deployment of vehicular communication systems is expensive and difficult to control given continuously changing mobility, traffic density, road topology, wireless conditions, and network configurations. Simulation frameworks therefore provide controlled, repeatable conditions for evaluating routing and handoff algorithms; different tools provide different capabilities for network communication, vehicle mobility, traffic simulation, and algorithm evaluation [1], [12], [22].
+A. Simulation Tools
+NS-2 / NS-3: discrete-event network simulators widely used for evaluating routing protocols and wireless communication systems. NS-3 provides improved support for modern protocols and architectures and is used to evaluate PDR, end-to-end delay, throughput, routing overhead, packet loss, and communication reliability.
+SUMO (Simulation of Urban Mobility): a microscopic traffic simulator that models road networks, vehicle routes, traffic lights, speeds, density, and vehicle interactions in urban and highway settings, typically used to generate realistic mobility traces consumed by a network simulator.
+OMNeT++: a modular discrete-event simulation framework for communication networks and distributed systems, offering a flexible architecture for developing communication protocols and network models.
+Veins: integrates OMNeT++ with SUMO so that SUMO-generated vehicle mobility influences OMNeT++ communication behaviour, making it well suited to evaluating V2V, V2I, IEEE 802.11p, V2X, and vehicular routing protocols [1], [12], [22].
+MATLAB: widely used for algorithm development, mathematical modelling, and performance evaluation, including ML, DL, RL, optimization, and routing algorithms, and particularly useful for developing and testing AI-based routing/handoff algorithms prior to integration with detailed network simulation.
+B. Mobility Models
+The urban mobility model simulates vehicles moving in a highly populated environment with intersections, traffic lights, many lanes, and different densities, leading to regular changes in topology, link breakages, congestion, handoffs, and routing overhead — all of which are conditions that SUMO can create in a realistic manner based on road maps, traffic demands, lights, and routes. On the other hand, the highway mobility model simulates the movement of vehicles at high speed with fewer intersections and predictable paths; while the speeds of the vehicles are higher, the time available to make decisions regarding routing and handoffs is much less, thus making it suitable to study high-speed handoffs, link stability, route lifetime, mobility prediction, and low latency communications [1], [12], [22].
+C. Datasets
+Datasets can be broadly classified into real-world traffic datasets, real-world communication (V2X measurement) datasets, and synthetic datasets generated using simulation.
+TABLE XI.  DATASETS USED IN IoV RESEARCH
+Dataset
+Type
+Information
+Application
+Cologne
+Real-world
+Traffic traces
+Mobility and routing
+Munich V2I
+Real-world
+V2I measurements
+Predictive QoS
+Brno V2V
+Real-world
+V2V measurements
+Communication analysis
+SUMO-generated
+Synthetic
+Vehicle mobility
+Routing and mobility
+NS-3-generated
+Synthetic
+Network traces
+Communication evaluation
+The Cologne trace dataset contains practical traffic data extensively utilized for simulating realistic vehicular behavior and evaluating the routing algorithm under realistic circumstances – something important since practical traffic data contains mobility patterns that are not necessarily captured by mathematical models. More recently, practical V2X measurement datasets have been provided for vehicular communications research based on machine learning techniques; some notable examples include the Munich V2I and Brno V2V measurement datasets for predictive QoS and machine learning research, where real communication measurements can be carried out, as opposed to only simulations [1], [12], [22]. In addition, synthetic data generated with SUMO and NS-3 provide the researchers with more freedom regarding vehicle density, speed, topology of roads, communication range, network load, and traffic conditions, which is helpful for experiments and reinforcement learning.
+D. Performance Metrics
+Objective comparison of routing and handoff mechanisms requires standardized metrics [12]:
+PDR = (N_received / N_sent) × 100
+(17)
+PDR stands for Packet Delivery Ratio which is basically a ratio between packets successfully received to packets transmitted; the higher PDR is, the more reliable the communication is. E2E stands for End-to-End Delay which is the time taken by the packet to go from its source to destination and includes transmission, propagation, processing, and queueing delay; low delay is desirable in safety-critical applications. Throughput is a measure of successfully transmitted data per unit time (bits/sec or Mbps). Link Stability is the capability of the communication link to remain available for at least the required amount of time because vehicles move very fast; high link stability will be required. Handoff delay is the time taken to complete handoff from one network to another; lower handoff delay provides better continuity of service, and Handoff Failure Probability is the probability of failure in handoff.
+The surveyed literature identifies PDR, end-to-end delay, throughput, routing overhead, link stability, handoff delay, and handoff failure probability as the most important evaluation metrics for IoV research [1], [12], [22].
+NS-2 and NS-3 are mainly employed to perform network simulations, SUMO to generate realistic mobility of vehicles, OMNeT++/Veins to perform combined vehicular communication simulations, and MATLAB to develop algorithms and evaluate them using AI techniques. Real world datasets like those of traffic in Cologne and V2X measurements datasets are used to perform realistic evaluation and machine learning training, while synthetically generated datasets by using SUMO and NS-3 enable more controlled experiments. Proper choice of simulation tools, mobility models, datasets, and metrics is critical to perform IoV routing and handoff evaluation fairly.
+VIII. Open Issues and Research Challenges
+Although IoV routing and handover schemes have been successfully developed in recent years, there still exist some basic issues to be addressed. The highly dynamic environment of vehicular networks, stringent latency constraints, mixed wireless communication technologies, security concerns, and lack of practical implementation experience hinder the development of intelligent IoV systems. For safety-related applications, end-to-end latency should normally be at 1-10 ms levels; nevertheless, even sophisticated DRL-enabled handover schemes may result in considerable transition latencies, and high speed of vehicles limits handover processing time greatly [1], [12], [22].
+A. Low-Latency and Real-Time Decision Making
+Latency should be low in order to satisfy one of the most crucial conditions in safety critical scenarios including collision avoidance, warning, cooperation, and autonomous navigation. The routing and handover process have to select routes and target networks very quickly; otherwise, any delay will result in packet loss or interruption of services. ML-based methods may contribute to better decision-making; however, heavy models need more time to make decisions and, hence, lightweight models are required for efficient IoV operations [1][12].
+B. High Vehicle Mobility
+The high speed of a mobile node results in the occurrence of many topology and link condition changes [1], [16]. In a high-speed environment, there is very little time for the preparation of handoffs, and frequent location change causes invalidation of the routing decision; the number of handoffs increases with speed. Future schemes must use mobility prediction to predict link and coverage change.
+C. Scalability in Dense Vehicular Networks
+The IoV systems of the future may require massive numbers of concurrent vehicles to communicate with each other [2], [16]. Techniques that work well in small-scale environments could become inefficient in congested environments, since techniques based on centralization suffer from scalability constraints due to processing data from several vehicles, whereas those based on decentralization suffer from coordination constraints between the vehicles.
+D. 5G, 6G, and mmWave Communication Challenges
+While 5G and future 6G enable higher data rates, reduced latency, network slicing, and massive connectivity [20], [21], new routing and handoff problems arise from these innovations. Millimeter wave communication provides high bandwidth, but suffers from limited coverage and sensitivity to blockages, thereby resulting in handoffs. Future IoV systems have to intelligently leverage sub-6-GHz communication, mmWave, C-V2X, DSRC/ITS-G5, Wi-Fi, and future 6G technologies. The problem of jointly selecting the best RAT, base station, and network slice is a novel one. 
+E. Security and Trust
+Routing and handoffs rely on communication among vehicles, RSUs, base stations, and other nodes, which makes IoV vulnerable to malicious base station attacks, signaling deception, fake information spread, man-in-the-middle attacks, denial of service attacks, Sybil attacks, and attacks against the AI/ML model itself [1], [13]. These attacks involve manipulating learned models to make incorrect routing and handoffs, making trustworthy AI/ML models necessary.
+F. Standardization, Interoperability, and Spectrum Coexistence
+IoV includes different communication technologies, network providers, vendors, and infrastructure elements; however, the absence of standardized test methods complicates any reasonable comparison of routing/handover methods, as well as interoperability when vehicles are switching between various operator-run networks [1], [24]. There is a need for standard interfaces, common testing procedures, and the same datasets used in research to ensure reproducibility. The coexistence of ITS-G5 and C-V2X in the 5.9 GHz band and integration of sub-6-GHz and mmWave V2V communications necessitate efficient management of the spectrum and reduction of interference caused by different properties [1], [12].
+G. Real-World Deployment, Dataset Availability, and Energy Efficiency
+Most of the studies use simulations that do not reflect interference issues of wireless links, limitations of the hardware system, unexpected behaviors of the vehicles, weather issues, and heterogeneity of infrastructure [1], [13]; hence, experimental verification is necessary to prove that the performance of the simulation will work in real-life situations. Data collected from one geographical location or traffic scenario cannot be assumed to generalize to other locations or scenarios; hence, domain generalization is an issue for AI/ML-based methods [5], [12]; future research needs to develop diverse and standard datasets that are available in public domain for different road geometries, density, weather, mobility, and technology. Lastly, AI-enabled routing and handoffs can lead to improvements in the performance, but they also lead to increased computational energy usage [12], [22].
+H. Summary of Open Challenges
+TABLE XII.  OPEN RESEARCH CHALLENGES IN IoV ROUTING AND HANDOFF
+Challenge
+Research Issue
+Low latency
+Real-time routing and handoff decisions within strict latency requirements
+High mobility
+Frequent topology changes and reduced handoff preparation time
+Scalability
+Large numbers of vehicles and communication nodes
+5G / 6G
+Multi-RAT, network slicing, and heterogeneous connectivity
+mmWave
+Short coverage range and blockage-induced handoffs
+Security
+Rogue nodes, spoofing, DoS, and adversarial AI attacks
+Standardization
+Lack of common evaluation methodologies and benchmarks
+Spectrum
+ITS-G5, C-V2X, sub-6-GHz, and mmWave coexistence
+Generalization
+AI models must work across different traffic and road conditions
+Energy
+Balancing communication performance with computational and communication energy
+I. Overall Research Gap
+The existing literature demonstrates substantial progress in both routing and handoff mechanisms; however, many approaches continue to treat routing and handoff as separate optimization problems [1], [12], [13]. In practical IoV environments the two are strongly interconnected — a routing decision can influence when and where a handoff becomes necessary, while a handoff can change the available communication path and render an existing route suboptimal. Additional gaps include limited real-world validation, scalability under dense networks, security of AI/ML models, heterogeneous communication technologies, and the lack of standardized datasets and evaluation methodologies. These limitations motivate future approaches that jointly consider routing and handoff, use adaptive AI/ML techniques, and operate efficiently across heterogeneous and highly dynamic vehicular environments — the subject of Section IX.
+IX. Future Research Directions
+The rapid evolution of IoV, driven by advances in communication technologies and intelligent systems, opens several opportunities for future research. Although significant progress has been made in routing and handoff mechanisms, challenges remain unresolved, particularly in highly dynamic and heterogeneous environments; future research should focus on intelligent, distributed, secure, and low-latency mechanisms capable of jointly optimizing routing and handoff decisions.
+A. Multi-Agent Reinforcement Learning for Joint Optimization
+Future studies are recommended to focus on the development of MARL frameworks for concurrent routing and handoff strategies [17], [19], [22]. While current systems have tended to treat these issues separately, they are tightly inter-related: routing decision of a vehicle could impact when and where a handoff would be required, and the improper choice of the handoff location may make routing route sub-optimal. Within the framework of MARL, each vehicle can function as an autonomous learning agent that shares the information about environment with neighboring agents. Decentralized implementation with centralized training is especially appealing as agents will be able to learn from global data during the training phase and autonomously decide when to perform actions upon deployment. Critical issues in the development of the framework include joint routing/handoff problem, design of a multi-criteria reward, trade-off between routing efficiency, handoff delay, and handoff energy consumption, non-stationarity issue due to simultaneous learning of several agents, training overhead reduction, and scalability to the large number of vehicles; transfer learning can enable trained MARL algorithms to be transferred to other urban settings.
+B. Edge Intelligence and MEC Integration
+MEC is another promising avenue for future work, because cloud-based solutions cause round-trip latency which is undesirable in safety-critical applications in vehicular networks. MEC servers placed next to RSUs and base stations could compute vehicular data and execute the AI inference locally, minimizing latency and enabling real-time decision making. One area of future research would be to examine how intelligence could be distributed between on-board units, RSUs/edge servers, base stations, and core cloud server, an edge-cloud collaborative intelligence system using quantized deep-learning and RL models which are lightweight enough not to reduce decision quality even with edge device constraints. Another important research direction would be dynamic computation offloading of computational tasks between vehicles and edge servers based on dynamic load balancing, along with MEC resource allocation which must take into account the handoff management so that ongoing route computations and learned states can migrate seamlessly when the vehicle leaves the MEC server coverage. Standards for MEC interfaces allowing integration of heterogeneous infrastructure are important directions to pursue, together with the other research directions listed above[1][22][39].
+C. Federated Learning for Distributed Intelligence
+Federated Learning (FL) offers a promising framework for training distributed AI models across a large vehicle fleet without requiring raw data to leave individual vehicles [1], [22]. Each vehicle can locally train a model on its own driving experience and network observations, periodically sending model updates rather than raw data to a global aggregation server, improving privacy and reducing data-transfer volume. IoV nonetheless poses several challenges for FL: vehicles in different regions and traffic conditions may generate non-independent and non-identically distributed (non-IID) data, so standard Federated Averaging may struggle to converge stably; personalized federated learning can let individual vehicles maintain locally adapted models while still benefiting from globally learned information; communication-efficient FL protocols are needed given limited bandwidth and intermittent connectivity; and security is a significant concern, since malicious vehicles may attempt model-poisoning attacks via corrupted updates. Promising mitigations include Byzantine-robust aggregation, anomaly detection, personalized federated learning, communication-efficient aggregation, and hierarchical federated learning, in which edge servers perform regional aggregation before forwarding to a global server, reducing latency and improving scalability.
+D. Blockchain-Based Secure Routing and Handoff
+Blockchain technology offers another potential direction for improving IoV security [12], [22]. It can provide decentralized authentication, tamper-resistant records, trust management, and data-integrity verification, addressing the single points of failure and vulnerabilities (e.g., man-in-the-middle and rogue base-station attacks) associated with centralized authentication architectures. A blockchain-based architecture can maintain a distributed ledger shared among vehicles, RSUs, and network operators, recording routing paths and handoff decisions in a tamper-resistant, auditable manner, while smart contracts can automate QoS agreements, handoff policies, authentication procedures, and trust-management decisions. Blockchain nonetheless introduces computational and communication overhead that is difficult to reconcile with millisecond-scale vehicular handoff requirements, motivating lightweight consensus mechanisms rather than computationally intensive Proof-of-Work. Promising directions include lightweight consensus mechanisms, DAG-based distributed ledgers, privacy-preserving authentication, zero-knowledge proofs, and cross-domain blockchain interoperability.
+E. Integration of 5G, 6G, and Multi-RAT Architectures
+Future IoV networks will operate across heterogeneous RATs, including DSRC/ITS-G5, C-V2X, LTE, 5G NR, Wi-Fi 6/6E, and future 6G technologies [1], [24]. 5G NR spans sub-6-GHz and mmWave frequencies, and future 6G systems may add further high-frequency technologies; this diversity creates new routing and handoff opportunities but also increases decision complexity, since a vehicle may need to simultaneously select the most appropriate RAT, base station or RSU, and network slice. 5G network slicing can provide differentiated QoS — for example, URLLC for safety-critical traffic and eMBB for infotainment — creating a joint optimization problem across RAT, base-station, and slice selection that future routing and handoff mechanisms should address directly.
+F. Joint Optimization of Routing and Handoff
+An important future direction is a unified framework for routing and handoff rather than separately optimized mechanisms [1], [13]. Since routing determines the communication path and handoff determines the network through which that path is maintained, a unified objective can jointly weigh PDR, end-to-end delay, handoff delay, energy consumption, link stability, network load, congestion, and communication cost:
+R_t = w₁·PDR_t + w₂·Stability_t + w₃·Throughput_t − w₄·Delay_t − w₅·HandoffDelay_t − w₆·Energy_t
+(18)
+Such a framework can provide a more comprehensive solution for highly dynamic IoV environments than treating routing and handoff independently.
+G. Energy-Efficient and Green IoV, and Real-World Benchmarks
+Future IoV systems should consider energy efficiency across routing, handoff, AI inference, and communication [13], [22], treating energy — alongside reliability and latency — as an explicit optimization objective spanning wireless transmission, packet reception and retransmission, routing-control messages, AI/ML inference and training, and edge computation. Equally, future research should move beyond simulation-only evaluation toward real-world measurements and experimental testbeds [25], [30]: current studies use differing mobility models, datasets, simulation parameters, and evaluation metrics, which complicates direct comparison. Standardized benchmark datasets and common evaluation protocols — covering realistic mobility, differing traffic densities, multiple communication technologies, differing road topologies, real communication measurements, and standardized routing and handoff metrics — would substantially improve reproducibility.
+In summary, future IoV research is expected to focus on intelligent, distributed, secure, and heterogeneous communication architectures [5], [12]. Multi-Agent Reinforcement Learning can jointly optimize routing and handoff decisions; edge intelligence and MEC can reduce latency and support real-time AI inference; federated learning can provide distributed intelligence while preserving privacy; blockchain can provide decentralized trust and secure routing/handoff; and 5G/6G multi-RAT architectures can provide heterogeneous connectivity with differentiated QoS. Alongside these, future systems should consider energy efficiency, real-world validation, standardized benchmarks, and joint optimization of routing and handoff — together providing a foundation for scalable, adaptive, secure, and efficient IoV networks capable of supporting next-generation intelligent transportation applications.
+X. Conclusion
+This survey has presented a comprehensive review of routing and handoff mechanisms in the Internet of Vehicles, covering foundational non-AI/ML approaches, advanced AI/ML-based techniques, hybrid multi-RAT architectures, and predictive-QoS datasets. The analysis shows that AI/ML-based approaches provide significant advantages over conventional mechanisms in highly dynamic vehicular environments; in particular, Deep Reinforcement Learning approaches such as DDQN-based V2N handoff, MA-DDQN-DH for distributed end-to-end network-selection handoff, and DDQN-based RAT selection demonstrate strong performance in adaptive network decision-making [1], [13], [14], [16].
+Traditional non-AI/ML routing mechanisms remain important for their low computational complexity, interpretability, and ease of deployment, though their dependence on predefined rules and fixed decision criteria limits adaptability under rapidly changing vehicular conditions [17], [19], [21], [24], [29]. AI/ML-based routing mechanisms overcome some of these limitations by learning from vehicle mobility, network conditions, traffic density, link quality, and congestion; computational complexity, training overhead, data availability, and model generalization nonetheless remain important challenges [18], [20], [22], [26], [27].
+The handoff problem in IoV is fundamentally multi-dimensional, depending simultaneously on signal strength, bandwidth, latency, vehicle speed, network load, link stability, energy consumption, and application-specific QoS requirements [4], [6], [7], [42]. The traditional distinction between Horizontal and Vertical Handoff is also becoming less clear-cut in increasingly heterogeneous IoV environments, where vehicles dynamically switch among DSRC, C-V2X, LTE, 5G, Wi-Fi, and future 6G technologies [1], [9], [48].
+Publicly available datasets are essential for reproducible research: real-world traffic and V2X measurement datasets provide more realistic evaluation than simulation alone [12], while frameworks such as SUMO, NS-3, and Veins remain important for controlled experimentation and large-scale evaluation [56]. The introduction of 5G network slicing further increases the complexity of IoV communication, since routing and handoff decisions may need to jointly consider Radio Access Technology, base station, and network slice [13].
+Several important challenges remain unresolved, including ultra-low-latency handoff, high-speed vehicle mobility, security and trust [33], [37], [40], [52], real-world validation, scalability [21], [34], heterogeneous communication [44], [46], spectrum coexistence, and standardized benchmarking. Future research should move toward unified, intelligent IoV architectures that jointly optimize routing and handoff; Multi-Agent Reinforcement Learning [13], [20], Edge Intelligence and MEC [39], [51], Federated Learning [49], [50], blockchain-based security [52], and 5G/6G multi-RAT architectures [1], [48] together provide promising directions toward adaptive, secure, scalable, and low-latency vehicular communication.
+Overall, integrating intelligent routing, predictive handoff, heterogeneous communication technologies, and real-world data has the potential to significantly improve the reliability, efficiency, scalability, and adaptability of next-generation IoV networks.
+
+XI. Comprehensive Comparison of Reviewed Literature
+While Tables VI–X compare methods within specific sub-topics, Table XIII below consolidates all 56 references reviewed in this survey into a single literature-comparison table, listing each study’s domain, method or approach, category (AI/ML vs. non-AI/ML), evaluation environment, and key contribution, to give readers a single point of reference for the full body of literature underlying this survey.
+The Evaluation Environment column also lets us quantify the real-world-validation gap raised qualitatively elsewhere in this survey. Of the 56 reviewed references, only 3 (5.4%) — [5], [6], [12] — report evaluation against a real-world deployment, testbed, or measured V2X dataset; 2 (3.6%) — [16], [56] — explicitly report simulation-only evaluation using a named tool (ns-3, or a general VANET simulation study); 7 (12.5%), all drawn from the quantitative comparison in Table X, are studies whose original authors do not report their evaluation environment at all; 10 (17.9%) are themselves surveys or reviews and therefore report no primary evaluation of their own; and the remaining 34 (60.7%) do not describe their evaluation environment in enough detail within the scope of this survey to be classified. In other words, only a small minority of the reviewed literature can be confirmed as validated beyond simulation, which reinforces this survey’s conclusion that real-vehicle validation remains a significant open gap in IoV routing and handoff research.
+TABLE XIII.  COMPREHENSIVE COMPARISON OF ALL REVIEWED STUDIES
+Ref.
+Study
+Domain
+Method / Approach
+Category
+Evaluation
+Environment
+Key Contribution
+[1]
+Elsayed et al., 2023
+Handoff
+Survey
+Non-AI/ML
+Survey
+5G vehicular handover survey: architectures, protocols, open issues
+[2]
+Midya et al., 2016
+Handoff
+Survey (NEMO, GMM)
+Non-AI/ML
+Survey
+Survey of classical VANET vertical-handoff mobility-management schemes
+[3]
+P. K. P et al., 2022
+Handoff (VHO)
+Q-learning+Fuzzy CNN+Jellyfish Opt.
+AI/ML
+Not reported
+Hybrid VHO framework; 25% fewer unnecessary handoffs
+[4]
+P. K. P & S. K, 2022
+Handoff (VHO)
+Decision algorithm
+Non-AI/ML
+Not specified
+Proficient VHO decision-making algorithm for 5G-integrated IoV
+[5]
+Dias et al., 2024
+Handoff (HHO)
+SDN + C-ITS CAM messages
+Non-AI/ML
+Real-world
+Proactive SDN handoff; ~0% packet loss, ~15% lower TCP delay
+[6]
+Goutam et al., 2020
+Handoff (VHO)
+MADM: SAW, MEW, TOPSIS
+Non-AI/ML
+Real-world
+TOPSIS most decisive: 0.907 (WLAN) vs 0.093 (4G)
+[7]
+P. K. P et al., 2022
+Handoff (VHO)
+VHO algorithm
+Non-AI/ML
+Not specified
+VHO algorithm improving QoS in 5G-integrated IoV
+[8]
+Ma Bin et al., 2015
+Handoff (VHO)
+Markov process + dynamic fuzzy weighting
+AI/ML
+Not reported
+M-VHO: ~145% lower packet loss; ping-pong cut 19.5→10.65
+[9]
+Odabaşı et al., 2022
+Handoff (VHO)
+ML-based proactive switching
+AI/ML
+Not reported
+Li-Fi/Wi-Fi VHO: up to 280× data rate, <5% interruption
+[10]
+Ma et al., 2017
+Handoff (VHO)
+Decision tree
+Non-AI/ML
+Not specified
+Interpretable, rule-based VHO decision model
+[11]
+Jha et al., 2022
+Handoff (VHO)
+Cuckoo Search + Genetic Algorithm
+Non-AI/ML
+Not reported
+CSVAG: +17% throughput vs Cuckoo, −50% delay at 40 km/h
+[12]
+Skocaj et al., 2023
+Handoff / Datasets
+Bayesian LSTM
+AI/ML
+Real-world
+Predicts throughput drop ~1 min ahead; public V2X pQoS datasets
+[13]
+Wu et al., 2022
+Handoff (HHO)
+DEC-MDP + MA-DDQN-DH
+AI/ML
+Not reported
+Near-optimal handoff under moderate load, network slicing
+[14]
+Yacheur et al., 2023
+Handoff (VHO)
+DDQN RAT selection
+AI/ML
+Not reported
+97% vs 66% packet reception; −80% redundant messages
+[15]
+Sharma et al., 2025
+Handoff (HHO)
+Evolutionary Game Theory
+AI/ML
+Not reported
+Up to 77.27% reduction in handoff delay
+[16]
+Tan et al., 2022
+Handoff (HHO)
+Double Deep Q-Network (DDQN)
+AI/ML
+Simulation (ns-3)
+25.72% packet-loss reduction; earlier handoff trigger
+[17]
+Mazouzi et al., 2023
+Routing (Geographic)
+ARGENT, agent-based
+Non-AI/ML
+Not specified
+Agent-based geographic routing using position/density/topology
+[18]
+Mazouzi et al., 2025
+Routing (Hybrid)
+AHARP, adaptive agent-based
+AI/ML
+Not specified
+Adaptive proactive/reactive switching; lower end-to-end delay
+[19]
+Han et al., 2020
+Routing (Congestion-aware)
+DBDR, back-pressure/queue-backlog
+Non-AI/ML
+Not specified
+Reduced congestion, improved throughput and packet loss
+[20]
+Lin et al., 2021
+Routing (Topology)
+DLRD, multi-agent RL
+AI/ML
+Not specified
+Adaptive distributed routing without global topology info
+[21]
+Kulanthaiyappan et al., 2020
+Routing (Cluster-based)
+Target Tracking Cluster Routing
+Non-AI/ML
+Not specified
+Reduced overhead, improved scalability via clustering
+[22]
+Park et al., 2024
+Routing (Topology)
+RHRA-DRL
+AI/ML
+Not specified
+Improved link stability; proactive rerouting before failure
+[23]
+Kalaivani & Deepa, 2025
+Routing
+AI-based optimization
+AI/ML
+Not specified
+AI-based routing optimization for IoV
+[24]
+Anand et al., 2024
+Routing / Security
+Rule-based + encryption
+Non-AI/ML
+Not specified
+Rule-based encrypted secure routing protocol for IoV
+[25]
+Wu et al., 2025
+Routing (Hybrid)
+V2V2I, adaptive beacon power
+Non-AI/ML
+Not specified
+Adaptive beacon power improves V2V2I coverage/energy use
+[26]
+Husnain et al., 2023
+Routing (Cluster-based)
+Harris Hawk Optimization
+AI/ML
+Not specified
+Improved clustering efficiency; high computation cost
+[27]
+Wang et al., 2018
+Routing (Topology)
+SDCoR, SDN + RL
+AI/ML
+Not specified
+Global network optimization via SDN + RL; infrastructure dependency
+[28]
+Chang & Wang, 2025
+Routing
+Context-aware link estimation
+AI/ML
+Not specified
+Predictive routing with multipath verification
+[29]
+Wang et al., 2020
+Routing (Geographic)
+Vehicle position analysis
+Non-AI/ML
+Not specified
+Position-analysis-based routing algorithm for IoV
+[30]
+Hussain et al., 2025
+Routing
+Reinforcement learning
+AI/ML
+Not specified
+RL-based route optimization for energy efficiency
+[31]
+Aadil et al., 2018
+Routing (Cluster-based)
+Dragonfly optimizer
+AI/ML
+Not specified
+CAVDO: metaheuristic-optimized clustering for IoV
+[32]
+Wu et al., 2020
+Routing (Hybrid)
+RSU-assisted RL
+AI/ML
+Not specified
+RSU-assisted RL routing for urban VANETs
+[33]
+Wang et al., 2026
+Security / Trust
+Behavioral/social trust model
+Non-AI/ML
+Not specified
+DTSDA: dual-trust selfish-node detection in VANETs
+[34]
+Ni et al., 2020
+Resource Management
+Performance analysis
+Non-AI/ML
+Not specified
+RM-IoV: large-scale IoV resource-management framework
+[35]
+Han et al., 2022
+Handoff
+Network calculus
+Non-AI/ML
+Not specified
+Analytical handoff algorithm for heterogeneous wireless networks
+[36]
+Chen et al., 2023
+Handoff (related domain)
+Rule-based VHO
+Non-AI/ML
+Not specified
+VHO algorithm for maritime heterogeneous networks
+[37]
+Shojae Chaeikar et al., 2023
+Security
+AI-enabled key management
+AI/ML
+Not specified
+Cryptographic key-management model for secure IoV comms
+[38]
+Wang et al., 2025
+Related (Semantic Comms)
+Deep semantic communication
+AI/ML
+Not specified
+Knowledge-sharing framework via deep semantic communication
+[39]
+Yan et al., 2024
+Related
+Survey (edge intelligence)
+Non-AI/ML
+Survey
+Survey of edge-intelligence techniques for IoV
+[40]
+Aggarwal & Kaddoum, 2023
+Security
+LSTM hybrid IDS
+AI/ML
+Not specified
+LSTM-based hybrid intrusion-detection system for IoV
+[41]
+Shao & Li, 2024
+Handoff (related domain)
+Weighting/network selection
+Non-AI/ML
+Not specified
+VHO weighting analysis for wireless body area networks
+[42]
+Goutam et al., 2022
+Handoff (VHO)
+Geometric mean + MADM
+Non-AI/ML
+Not specified
+Geometric-mean MADM technique for VHO decisions
+[43]
+Zhou et al., 2023
+Related (Traffic prediction)
+Edge computing
+AI/ML
+Not specified
+Short-term traffic-flow prediction via 5G IoV edge computing
+[44]
+Agbaje et al., 2022
+Related
+Survey (interoperability)
+Non-AI/ML
+Survey
+Survey of interoperability challenges in IoV
+[45]
+Deng et al., 2025
+Related (Task offloading)
+DRL + representation learning
+AI/ML
+Not specified
+DRL-based task offloading with DAG scheduling
+[46]
+Kandali et al., 2026
+Related
+Survey (VANET-IoT-IoV)
+Non-AI/ML
+Survey
+Comprehensive survey of VANET-IoT integration into IoV
+[47]
+Tripathy, 2023
+Routing
+Survey
+Non-AI/ML
+Survey
+Survey of routing algorithms in IoV
+[48]
+Amaira et al., 2025
+Handoff
+Survey (DRL for 6G)
+AI/ML
+Survey
+Survey of DRL-based handover for 6G vehicular networks
+[49]
+Khatua et al., 2024
+Routing
+Federated learning + GA
+AI/ML
+Not specified
+FL model integrating sustainable routing via genetic algorithm
+[50]
+Scott et al., 2024
+Related (Rural connectivity)
+Decentralized clustering + FL
+AI/ML
+Not specified
+Clustering + federated learning for rural IoV connectivity
+[51]
+Liu et al., 2025
+Related (Task offloading)
+MEC-assisted allocation
+AI/ML
+Not specified
+Task offloading/resource allocation for consumer IoV
+[52]
+Razafimanjato et al., 2025
+Security
+Survey (blockchain trust)
+Non-AI/ML
+Survey
+Survey of blockchain-based trust management in IoV
+[53]
+Panigrahy & Emany, 2023
+Related
+Survey/tutorial
+Non-AI/ML
+Survey
+Survey/tutorial on network optimization for ITS-IoV
+[54]
+Cheng et al., 2015
+Routing
+Survey (foundational)
+Non-AI/ML
+Survey
+Early foundational review of IoV routing
+[55]
+Ajaz et al., 2025
+Routing (Cluster-based)
+Lion optimization
+AI/ML
+Not specified
+CLORP: lion-optimization-based cluster routing protocol
+[56]
+Sharma et al., 2026
+Routing
+Simulation study
+Non-AI/ML
+Simulation
+Modeling/simulation of VANET routing under realistic mobility
+
+REFERENCES
+[1] M.M. Elsayed, K.M. Hosny, M.M. Fouda, M.M. Khashaba, Vehicles communications handover in 5G: A survey, ICT Express 9 (2023) 366–378.
+[2] S. Midya, K. Majumder, A. Roy, D. De, Vertical handoff mechanisms in VANET: A survey, in: Proc. ICTCS, Udaipur, India, 2016.
+[3] P.K. P, A. R, S. K, A relative survey on vertical handover mechanisms in Internet of Vehicles, in: Proc. ICCPC, 2022, pp. 259–263.
+[4] P.K. P, S. K, A proficient vertical handover decision making algorithm in Internet of Vehicles with 5G, in: Proc. ICEARS, 2022, pp. 456–462.
+[5] D. Dias, M. Luis, P. Rito, S. Sargento, A software defined vehicular network using cooperative intelligent transport system messages, IEEE Access 12 (2024) 93152–93170.
+[6] S. Goutam, S. Unnikrishnan, A. Karandikar, Algorithm for vertical handover using multi attribute decision making techniques, in: Proc. IEEE Comnetsat, 2020, pp. 306–313.
+[7] P.K. P, A. R, S. K, An efficient VHO algorithm to enhance QoS in Internet of Vehicles with the integration of 5G, in: Proc. ICEARS, 2022, pp. 463–467.
+[8] M. Bin, D. Hong, X. Xianzhong, L. Xiaofeng, An optimized vertical handoff algorithm based on Markov process in vehicle heterogeneous network, China Communications 12 (2015) 106–116.
+[9] A.S. Odabasi, O. Isci, V. Rodoplu, Machine learning based seamless vertical handoff mechanism for hybrid Li-Fi/Wi-Fi networks, in: Proc. INISTA, 2022.
+[10] B. Ma, D. Wang, S. Cheng, X. Xie, Modeling and analysis for vertical handoff based on the decision tree in a heterogeneous vehicle network, IEEE Access 5 (2017) 8812–8824.
+[11] K. Jha, A. Gupta, A. Alabdulatif, S. Tanwar, C.O. Safirescu, T.C. Mihaltan, CSVAG: Optimizing vertical handoff using hybrid cuckoo search and genetic algorithm-based approaches, Sustainability 14(14) (2022) 8547.
+[12] M. Skocaj et al., Vehicle-to-Everything (V2X) datasets for machine learning-based predictive quality of service, IEEE Communications Magazine 61(9) (2023) 106–112.
+[13] W. Wu, F. Yang, Y. Gao, X. Wang, P. Si, Y. Zhang, F.R. Yu, Distributed handoff problem in heterogeneous networks with end-to-end network slicing: Decentralized Markov decision process-based modeling and solution, IEEE Trans. Wireless Commun. 21(12) (2022) 11222–11236.
+[14] B.Y. Yacheur, T. Ahmed, M. Mosbah, Efficient DRL-based selection strategy in hybrid vehicular networks, IEEE Trans. Netw. Serv. Manag. 20(3) (2023) 2400–2411.
+[15] S. Sharma, S. Ghosh, M.R. Bhatnagar, B.K. Panigrahi, Handoff agent selection for handoff delay management in vehicular networks: An evolutionary game theoretic solution, in: Proc. IEEE VTC2025-Fall, 2025.
+[16] K. Tan, D. Bremner, J. Le Kernec, Y. Sambo, L. Zhang, M.A. Imran, Intelligent handover algorithm for vehicle-to-network communications with double-deep Q-learning, IEEE Trans. Veh. Technol. 71(7) (2022) 7848–7862.
+[17] M. Mazouzi, K. Mershad, O. Cheikhrouhou, M. Hamdi, Agent-Based Reactive Geographic Routing Protocol for Internet of Vehicles, IEEE Access 11 (2023) 79954–79967.
+[18] M. Mazouzi, O. Cheikhrouhou, M. Mosbah, AHARP: An Adaptive Hybrid Agent-Based Routing Protocol for Internet of Vehicles, in: Proc. IEEE IWCMC, 2025.
+[19] R. Han, Q. Guan, F.R. Yu, J. Shi, F. Ji, Congestion and Position Aware Dynamic Routing for the Internet of Vehicles, IEEE Trans. Veh. Technol. 69(12) (2020) 16082–16095.
+[20] K. Lin, C. Li, Y. Li, C. Savaglio, G. Fortino, Distributed Learning for Vehicle Routing Decision in Software Defined Internet of Vehicles, IEEE Trans. Intell. Transp. Syst. 22(6) (2021) 3730–3740.
+[21] S. Kulanthaiyappan, S. Settu, C. Chellaih, Internet of Vehicle: Effects of Target Tracking Cluster Routing in Vehicle Network, in: Proc. ICACCS, 2020.
+[22] J.-H. Park, Q. Yang, S.-J. Yoo, RHRA-DRL: RSU-Assisted Hybrid Road-Aware Routing Using Distributed Reinforcement Learning in Internet of Vehicles, IEEE Access 12 (2024) 25385–25399.
+[23] K. Kalaivani, N. Deepa, Routing Optimization of the Internet of Vehicle with Artificial Intelligence, in: Proc. IEEE Conf., 2025.
+[24] A.M. Anand et al., Rule and Encryption Based Secure Routing for Internet of Vehicle Networks, in: Proc. ICNWC, 2024.
+[25] T. Wu, Y. Ou, Q. Zhou, X. Chen, A V2V2I Routing Algorithm for Internet of Vehicles Based on Adaptive Variable Beacon Power, Computing 107 (2025).
+[26] G. Husnain, S. Anwar, F. Shahzad, An Enhanced AI-Enabled Routing Optimization Algorithm for Internet of Vehicles, Wireless Pers. Commun. 130 (2023) 2623–2643.
+[27] C. Wang, L. Zhang, Z. Li, C. Jiang, SDCoR: Software Defined Cognitive Routing for Internet of Vehicles, IEEE Internet Things J. 5(5) (2018) 3513–3525.
+[28] Y. Chang, X. Wang, Robust Predictive Routing for Internet of Vehicles With Context-Aware Link Estimation and Multipath Verification, preprint, arXiv:2503.23889, 2025.
+[29] L. Wang, J. Gui, X. Deng, F. Zeng, Z. Kuang, Routing Algorithm Based on Vehicle Position Analysis for Internet of Vehicles, IEEE Internet Things J. 7(12) (2020) 11701–11712.
+[30] Q. Hussain, A.S.M. Noor, M.M. Qureshi, J. Li, A. Rahman, A. Bakry, T. Mahmood, A. Rehman, Reinforcement learning based route optimization model to enhance energy efficiency in internet of vehicles, Scientific Reports 15 (2025) 3113.
+[31] F. Aadil, W. Ahsan, Z.U. Rehman, P.A. Shah, S. Rho, I. Mehmood, Clustering algorithm for internet of vehicles (IoV) based on dragonfly optimizer (CAVDO), J. Supercomput. 74(9) (2018) 4542–4567.
+[32] J. Wu, M. Fang, H. Li, X. Li, RSU-Assisted Traffic-Aware Routing Based on Reinforcement Learning for Urban VANETs, IEEE Access 8 (2020) 5733–5748.
+[33] W. Wang, M. Qin, L. You, C. Yang, Q. Lou, W. Guo, Research on a Dual-Trust Selfish Node Detection Algorithm Based on Behavioral and Social Characteristics in VANETs, Electronics 15(1) (2026) 150.
+[34] Y. Ni, L. Cai, J. He, A. Vinel, Y. Li, H. Mosavat-Jahromi, J. Pan, Toward reliable and scalable Internet of Vehicles: Performance analysis and resource management, Proc. IEEE 108(2) (2020) 324–340.
+[35] C. Han, L. Sun, C. Wang, J. Guo, A handoff algorithm based on network calculus for heterogeneous wireless networks, in: Proc. China Automation Congress (CAC), 2022, pp. 4113–4118. https://doi.org/10.1109/CAC57257.2022.10055050.
+[36] H. Chen, X. Wang, C. Zhou, A vertical handoff algorithm for maritime communication in heterogeneous networks, in: Proc. 15th Int. Conf. Communication Software and Networks (ICCSN), 2023, pp. 74–79. https://doi.org/10.1109/ICCSN57992.2023.10297360.
+[37] S. Shojae Chaeikar, A. Jolfaei, N. Mohammad, AI-enabled cryptographic key management model for secure communications in the Internet of Vehicles, IEEE Trans. Intell. Transp. Syst. 24(4) (2023) 4589–4598. https://doi.org/10.1109/TITS.2022.3200250.
+[38] Z. Wang, S. Leng, H. Zhang, C. Yuen, Deep semantic communication for knowledge sharing in Internet of Vehicles, IEEE Internet Things J. 12(12) (2025) 19202–19215. https://doi.org/10.1109/JIOT.2025.3531910.
+[39] G. Yan, K. Liu, C. Liu, J. Zhang, Edge intelligence for Internet of Vehicles: A survey, IEEE Trans. Consum. Electron. 70(2) (2024) 4858–4875. https://doi.org/10.1109/TCE.2024.3378509.
+[40] K. Aggarwal, G. Kaddoum, LSTM-based hybrid intrusion detection system for Internet of Vehicles, in: Proc. IEEE Global Communications Conf. (GLOBECOM), 2023, pp. 3831–3836. https://doi.org/10.1109/GLOBECOM54140.2023.10437232.
+[41] R. Shao, X. Li, Analysis of weighting and network selection methods for vertical handoff in wireless body area network, Wireless Pers. Commun. 137 (2024) 1861–1901. https://doi.org/10.1007/s11277-024-11469-6.
+[42] S. Goutam, S. Unnikrishnan, A. Karandikar, A. Goutam, Algorithm for vertical handover decision using geometric mean and MADM techniques, Int. J. Inf. Technol. 14(5) (2022) 2691–2699. https://doi.org/10.1007/s41870-022-00935-8.
+[43] S. Zhou, C. Wei, C. Song, X. Pan, W. Chang, L. Yang, Short-term traffic flow prediction of the smart city using 5G Internet of Vehicles based on edge computing, IEEE Trans. Intell. Transp. Syst. 24(2) (2023) 2229–2238. https://doi.org/10.1109/TITS.2022.3147845.
+[44] P. Agbaje, A. Anjum, A. Mitra, E. Oseghale, G. Bloom, H. Olufowobi, Survey of interoperability challenges in the Internet of Vehicles, IEEE Trans. Intell. Transp. Syst. 23(12) (2022) 22838–22857. https://doi.org/10.1109/TITS.2022.3194413.
+[45] X. Deng, H. Yang, J. Zhang, J. Gui, S. Lin, X. Wang, G. Min, Task offloading in Internet of Vehicles: A DRL-based approach with representation learning for DAG scheduling, IEEE Trans. Mobile Comput. 24(6) (2025) 5045–5060. https://doi.org/10.1109/TMC.2025.3531887.
+[46] K. Kandali, S. Nouh, L. Bennis, H. Bennis, A comprehensive survey on VANET–IoT integration toward the Internet of Vehicles: Architectures, communications, and system challenges, Future Transportation 6(1) (2026) 32. https://doi.org/10.3390/futuretransp6010032.
+[47] A.K. Tripathy, On routing algorithms in the internet of vehicles: A survey, Cogent Engineering 10(1) (2023) 2272583. https://doi.org/10.1080/09540091.2023.2272583.
+[48] A. Amaira, H. Koubaa, F. Zarai, DRL for handover in 6G-vehicular networks: A survey, Neurocomputing (2025) 128971.
+[49] S. Khatua, D. De, S. Maji, A federated learning model for integrating sustainable routing with the Internet of Vehicular Things using genetic algorithm, Decision Analytics Journal 11 (2024) 100486.
+[50] C. Scott, M.S. Khan, A. Paranjothi, J.Q. Li, Enabling rural IoV communication through decentralized clustering and federated learning, in: Proc. IEEE 14th Annu. Computing and Communication Workshop and Conf. (CCWC), 2024, pp. 228–234.
+[51] Y. Liu, D. Li, H. Wu, Z. Sun, W. Qin, J. Li, H. Du, G. Sun, Task offloading and resource allocation for MEC-assisted consumer Internet of Vehicle systems, IEEE Trans. Consum. Electron. (2025).
+[52] M. Razafimanjato, M.M. Saad, D. Kim, Blockchain-based trust management systems in the Internet of Vehicles: A comprehensive survey, ICT Express 11(6) (2025) 1265–1285. https://doi.org/10.1016/j.icte.2025.09.012.
+[53] S.K. Panigrahy, H. Emany, A survey and tutorial on network optimization for intelligent transport system using the Internet of Vehicles, Sensors 23(1) (2023) 555. https://doi.org/10.3390/s23010555.
+[54] J. Cheng, J. Cheng, M. Zhou, F. Liu, S. Gao, C. Liu, Routing in Internet of Vehicles: A review, IEEE Trans. Intell. Transp. Syst. 16(5) (2015) 2339–2352. https://doi.org/10.1109/TITS.2015.2423667.
+[55] F. Ajaz, M. Naseem, J.V.N. Ramesh, M. Shabaz, G. Ahamad, Cluster based lion optimization routing protocol for Internet of Vehicles (CLORP), Trans. Emerging Telecommun. Technol. 36(3) (2025) e70089. https://doi.org/10.1002/ett.70089.
+[56] S. Sharma, S. Kour, H. Sarangal, Modeling and simulation of VANET routing protocols under realistic mobility patterns, Scientific Reports 16 (2026) 9130. https://doi.org/10.1038/s41598-026-36039-7.

@@ -1,0 +1,5 @@
+Scheme,PDR (%),E2E Latency (ms),Throughput (Mbps),Ping-Pong Rate (per veh)
+Proposed Novel Attn-FedTD3,99.38020697097639,1.2708927600000002,470.96478473523956,0.0
+Base Paper MA-DDQN [13],82.62,4.51,212.85,4.12
+RSSI Hysteresis,85.45,2.67,230.95,2.68
+Static DSRC / ITS-G5,56.95,5.8,28.22,7.38
