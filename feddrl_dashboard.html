@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FedDRL VHO Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#eef2fb; --bg2:#e4eafc; --panel:#ffffffee; --text:#0b1220; --muted:#5b6478;
+  --border:#d7e0f5; --accent:#2f6fed; --accent2:#8b2fed; --ok:#079268; --warn:#e0334f;
+  --lte:#0072ff; --fiveg:#00b86b; --wifi:#ff9f1c;
+  --shadow: 0 4px 18px rgba(30,40,80,.08);
+  --glow: 0 0 0 rgba(0,0,0,0);
+  box-sizing:border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#070b16; --bg2:#0c1226; --panel:rgba(18,24,44,.82); --text:#e8ecf7; --muted:#8b96b8;
+    --border:rgba(0,224,255,.16); --accent:#00e5ff; --accent2:#c14dff; --ok:#39ff9c; --warn:#ff5d73;
+    --lte:#00e5ff; --fiveg:#39ff9c; --wifi:#ffb020;
+    --shadow:0 8px 28px rgba(0,0,0,.5);
+    --glow: 0 0 24px rgba(0,224,255,.12);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#070b16; --bg2:#0c1226; --panel:rgba(18,24,44,.82); --text:#e8ecf7; --muted:#8b96b8;
+  --border:rgba(0,224,255,.16); --accent:#00e5ff; --accent2:#c14dff; --ok:#39ff9c; --warn:#ff5d73;
+  --lte:#00e5ff; --fiveg:#39ff9c; --wifi:#ffb020;
+  --shadow:0 8px 28px rgba(0,0,0,.5);
+  --glow: 0 0 24px rgba(0,224,255,.12);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+body{margin:0;color:var(--text);
+  background:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 40%),
+    radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--accent2) 10%, transparent), transparent 45%),
+    var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.app{max-width:1040px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+h1{font-size:1.4rem;margin:0;font-weight:800;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);font-size:.85rem;margin-top:2px}
+nav{display:flex;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:4px;
+  box-shadow:var(--shadow)}
+nav button{border:none;background:transparent;color:var(--muted);padding:8px 16px;border-radius:9px;
+  font-size:.9rem;cursor:pointer;font-weight:700;transition:.15s}
+nav button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  box-shadow:var(--glow)}
+.page{display:none}
+.page.active{display:block}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px;
+  box-shadow:var(--shadow), var(--glow);margin-bottom:16px;backdrop-filter:blur(8px)}
+.card h2{font-size:1rem;margin:0 0 4px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+input[type=number],select{width:100%;padding:9px 10px;border-radius:9px;border:1px solid var(--border);
+  background:var(--bg2);color:var(--text);font-size:.9rem}
+input[type=number]:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.field{display:flex;flex-direction:column}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button.btn{border:none;border-radius:9px;padding:10px 20px;font-size:.9rem;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:var(--glow)}
+.btn-primary:hover:not(:disabled){filter:brightness(1.1)}
+.btn-danger{background:linear-gradient(135deg,var(--warn),#ff8a5c);color:#fff}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)!important}
+button.btn:disabled{opacity:.4;cursor:not-allowed}
+.status{margin-top:14px;font-size:.85rem;color:var(--muted)}
+.status b{color:var(--text)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center}
+.metric .v{font-size:1.25rem;font-weight:800;font-family:"SF Mono",Consolas,monospace;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.metric .l{font-size:.7rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+canvas{max-height:280px;max-width:100%}
+#networkView{width:100%;height:300px;border-radius:12px;
+  background:radial-gradient(ellipse at 50% 0%, var(--bg2), var(--bg));
+  border:1px solid var(--border);box-shadow:inset 0 0 40px rgba(0,0,0,.25)}
+.netlegend{display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin:10px 0}
+.netlegend span{display:flex;align-items:center;gap:6px;font-weight:700}
+.netlegend i{display:inline-block;width:11px;height:11px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.netlegend b{color:var(--text);font-family:"SF Mono",Consolas,monospace}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:9px 6px;text-align:left;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em}
+tr:hover td{background:var(--bg2)}
+.tablewrap{overflow-x:auto}
+.empty{color:var(--muted);text-align:center;padding:30px 0;font-size:.9rem}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.pill-fed{background:color-mix(in srgb, var(--accent) 20%, transparent);color:var(--accent)}
+.pill-base{background:color-mix(in srgb, var(--wifi) 20%, transparent);color:var(--wifi)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>📡 FedDRL Vertical-Handoff Command Center</h1>
+      <div class="sub">Configure and run a simulated Federated-DRL / DDQN-TS training session across your vehicle fleet</div>
+    </div>
+    <nav>
+      <button id="navRun" class="active">Simulator</button>
+      <button id="navHistory">Results History</button>
+    </nav>
+  </header>
+
+  <!-- ================= SIMULATOR PAGE ================= -->
+  <div id="pageRun" class="page active">
+    <div class="card">
+      <h2>Configuration</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Algorithm</label>
+          <select id="algo">
+            <option value="fed">Federated DRL</option>
+            <option value="base">Centralized DDQN-TS (base)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Scenario</label>
+          <select id="scenario">
+            <option value="urban">Urban</option>
+            <option value="rural">Rural</option>
+            <option value="highway">Highway</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Number of Vehicles</label>
+          <input type="number" id="numVehicles" value="20" min="1" max="500" step="1">
+        </div>
+        <div class="field">
+          <label id="roundsLabel">Federated Rounds</label>
+          <input type="number" id="numRounds" value="30" min="1" max="500" step="1">
+        </div>
+        <div class="field">
+          <label>Local Episodes / Round</label>
+          <input type="number" id="numEpisodes" value="50" min="1" max="2000" step="1">
+        </div>
+        <div class="field">
+          <label>Learning Rate</label>
+          <input type="number" id="lr" value="0.001" min="0.00001" max="1" step="0.0001">
+        </div>
+        <div class="field">
+          <label>Episode Length (steps)</label>
+          <input type="number" id="maxSteps" value="200" min="10" max="5000" step="10">
+        </div>
+        <div class="field">
+          <label>Batch Size</label>
+          <input type="number" id="batchSize" value="64" min="4" max="1024" step="4">
+        </div>
+        <div class="field">
+          <label>Replay Buffer Capacity</label>
+          <input type="number" id="bufferCapacity" value="2000" min="50" max="100000" step="50">
+        </div>
+        <div class="field">
+          <label>Discount Factor (γ)</label>
+          <input type="number" id="gamma" value="0.99" min="0.5" max="0.999" step="0.001">
+        </div>
+        <div class="field">
+          <label>Target Sync Every (steps)</label>
+          <input type="number" id="targetSync" value="7" min="1" max="500" step="1">
+        </div>
+        <div class="field">
+          <label>Sim Speed (ms/round)</label>
+          <input type="number" id="speed" value="120" min="20" max="2000" step="10">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="startBtn" class="btn btn-primary">▶ Start Simulation</button>
+        <button id="stopBtn" class="btn btn-ghost" disabled>■ Stop</button>
+        <button id="resetBtn" class="btn btn-ghost">↺ Reset</button>
+      </div>
+      <div class="status" id="status">Not started.</div>
+    </div>
+
+    <div class="card">
+      <h2>🌐 Live Network View</h2>
+      <div class="sub" id="netSubtitle">Press Start to watch your vehicle fleet switch between networks in real time.</div>
+      <div class="netlegend">
+        <span style="color:var(--lte)"><i style="background:var(--lte);color:var(--lte)"></i>LTE <b id="cntLTE">0</b></span>
+        <span style="color:var(--fiveg)"><i style="background:var(--fiveg);color:var(--fiveg)"></i>5G <b id="cnt5G">0</b></span>
+        <span style="color:var(--wifi)"><i style="background:var(--wifi);color:var(--wifi)"></i>WiFi <b id="cntWiFi">0</b></span>
+      </div>
+      <canvas id="networkView" width="900" height="300"></canvas>
+      <div class="status" id="netStatus">Not started.</div>
+    </div>
+
+    <div class="card">
+      <div class="metrics">
+        <div class="metric"><div class="v" id="mReward">--</div><div class="l">Avg. Reward</div></div>
+        <div class="metric"><div class="v" id="mHo">--</div><div class="l">Handoff Prob.</div></div>
+        <div class="metric"><div class="v" id="mPP">--</div><div class="l">Ping-Pong Prob.</div></div>
+        <div class="metric"><div class="v" id="mRound">0 / 0</div><div class="l">Round</div></div>
+      </div>
+      <canvas id="rewardChart"></canvas>
+    </div>
+    <div class="card">
+      <canvas id="hoChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ================= RESULTS HISTORY PAGE ================= -->
+  <div id="pageHistory" class="page">
+    <div class="card">
+      <h2>Saved Runs</h2>
+      <div class="tablewrap">
+        <table id="runsTable">
+          <thead>
+            <tr><th>When</th><th>Algo</th><th>Scenario</th><th>Vehicles</th><th>Rounds</th>
+                <th>Episodes</th><th>Final Reward</th><th>Final HO%</th><th></th></tr>
+          </thead>
+          <tbody id="runsBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyMsg" class="empty" style="display:none">No saved runs yet — run a simulation on the Simulator tab.</div>
+      <div class="actions">
+        <button id="clearAllBtn" class="btn btn-danger">Clear All Runs</button>
+      </div>
+    </div>
+    <div class="card" id="viewCard" style="display:none">
+      <h2 id="viewTitle">Run detail</h2>
+      <canvas id="historyChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const STORAGE_KEY = "feddrl_dashboard_runs";
+
+  // ---------- navigation ----------
+  const pages = { run: document.getElementById("pageRun"), history: document.getElementById("pageHistory") };
+  const navRun = document.getElementById("navRun"), navHistory = document.getElementById("navHistory");
+  function showPage(name){
+    Object.values(pages).forEach(p=>p.classList.remove("active"));
+    navRun.classList.remove("active"); navHistory.classList.remove("active");
+    if(name==="run"){ pages.run.classList.add("active"); navRun.classList.add("active"); }
+    else { pages.history.classList.add("active"); navHistory.classList.add("active"); renderRunsTable(); }
+  }
+  navRun.addEventListener("click", ()=>showPage("run"));
+  navHistory.addEventListener("click", ()=>showPage("history"));
+
+  // ---------- storage helpers ----------
+  function loadRuns(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveRuns(runs){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(runs.slice(-50))); }
+    catch(e){ console.warn("could not persist runs", e); }
+  }
+  function addRun(run){
+    const runs = loadRuns();
+    runs.push(run);
+    saveRuns(runs);
+  }
+
+  // ---------- simplified training-dynamics simulator ----------
+  // NOTE: this models plausible convergence trends (more vehicles -> lower
+  // variance via averaging, more local episodes/higher lr -> faster
+  // convergence, scenario -> different ceiling), it does not invoke real
+  // ns-3/SUMO/PyTorch training. Swap `computeRoundMetrics` for a call to
+  // your real training backend when you have one.
+  const SCENARIO_CFG = {
+    urban:   { rewardCeil: 10.0, hoFloor: 0.18, ppFloor: 0.12 },
+    rural:   { rewardCeil: 13.5, hoFloor: 0.12, ppFloor: 0.08 },
+    highway: { rewardCeil: 16.0, hoFloor: 0.10, ppFloor: 0.06 },
+  };
+  function computeRoundMetrics(round, totalRounds, cfg, rngState){
+    const sc = SCENARIO_CFG[cfg.scenario];
+    // episode length feeds into the "effective" local training signal per
+    // round: longer episodes -> more transitions -> more gradient steps
+    const stepsFactor = Math.min(2, cfg.maxSteps / 200);
+    const speedFactor = Math.min(1, (cfg.numEpisodes/50) * (cfg.lr/0.001) * stepsFactor);
+    // smaller target-sync period (paper default: 7) -> more stable target,
+    // faster convergence; larger buffer/batch -> smoother gradient estimate
+    const syncFactor = Math.max(0.5, Math.min(2, 7 / cfg.targetSync));
+    const bufferFactor = Math.min(1.3, 1 + Math.log10(Math.max(cfg.bufferCapacity,50)/2000) * 0.15);
+    const k = (0.06 + 0.12 * Math.min(speedFactor, 2.5)) * syncFactor * bufferFactor;
+    const progress = 1 - Math.exp(-k * round);
+
+    // federated averaging across more vehicles reduces variance and gives a
+    // small ceiling boost (diminishing returns), centralized "base" has a
+    // slightly lower ceiling (no cross-vehicle generalization) but less noise scaling
+    const isFed = cfg.algo === "fed";
+    const vehicleFactor = isFed ? Math.min(0.12, 0.12*(1 - 1/Math.sqrt(cfg.numVehicles))) : 0;
+    // higher gamma (more farsighted credit assignment) -> slightly higher
+    // achievable ceiling; larger batch size -> lower per-round noise
+    const gammaFactor = 1 + (cfg.gamma - 0.99) * 2;
+    const rewardCeil = sc.rewardCeil * (1 + vehicleFactor) * gammaFactor;
+    const batchNoiseFactor = Math.max(0.6, Math.min(1.5, 64 / Math.max(cfg.batchSize,4)));
+    const noiseScale = (isFed ? 1/Math.sqrt(Math.max(cfg.numVehicles,1)) : 1) * batchNoiseFactor;
+
+    const startReward = rewardCeil * 0.15;
+    let reward = startReward + (rewardCeil - startReward) * progress;
+    reward += (rngState.next()-0.5) * 1.2 * noiseScale;
+
+    const hoStart = 0.75;
+    let ho = sc.hoFloor + (hoStart - sc.hoFloor) * (1 - progress);
+    ho += (rngState.next()-0.5) * 0.06 * noiseScale;
+    ho = Math.max(0.02, Math.min(0.95, ho));
+
+    const ppStart = 0.55;
+    let pp = sc.ppFloor + (ppStart - sc.ppFloor) * (1 - progress);
+    pp += (rngState.next()-0.5) * 0.05 * noiseScale;
+    pp = Math.max(0.01, Math.min(0.9, pp));
+
+    return { reward, ho, pp };
+  }
+  // seeded PRNG so a given config is reproducible within one run
+  function makeRng(seed){
+    let s = seed % 2147483647; if(s<=0) s+=2147483646;
+    return { next(){ s = s*16807 % 2147483647; return (s-1)/2147483646; } };
+  }
+
+  // ---------- live network view: the WHOLE fleet switching RATs ----------
+  // Mirrors env.py's BS counts per scenario (urban 15, rural/highway 9) and
+  // labels each tower LTE/5G/WiFi purely for visual clarity (vertical
+  // handoff = switching between different RAT types, unlike a same-RAT
+  // horizontal handoff). Every vehicle from "Number of Vehicles" is
+  // simulated and drawn (capped at RENDER_CAP purely so the canvas stays
+  // legible and fast at very large fleet sizes -- the metrics/charts still
+  // use the real requested count).
+  const RENDER_CAP = 250;
+  const BS_TYPES = ["LTE", "5G", "WiFi"];
+  const BS_COLORS = { LTE: "#00b7ff", "5G": "#2be08a", WiFi: "#ffb020" };
+  const netCanvas = document.getElementById("networkView");
+  const netCtx = netCanvas.getContext("2d");
+  const SCENARIO_NUM_BS = { urban: 15, rural: 9, highway: 9 };
+
+  function nearestBS(pt, bsList){
+    let best = null, bestD = Infinity;
+    bsList.forEach(bs=>{ const d = Math.hypot(bs.x-pt.x, bs.y-pt.y); if(d<bestD){bestD=d; best=bs;} });
+    return best;
+  }
+
+  function initNetworkView(cfg, rng){
+    const w = netCanvas.width, h = netCanvas.height;
+    const n = SCENARIO_NUM_BS[cfg.scenario] || 9;
+    const bsList = [];
+    for(let i=0;i<n;i++){
+      bsList.push({ id:i, type: BS_TYPES[i%3],
+        x: 40 + rng.next()*(w-80), y: 40 + rng.next()*(h-80) });
+    }
+    const displayCount = Math.min(cfg.numVehicles, RENDER_CAP);
+    const vehicles = [];
+    for(let i=0;i<displayCount;i++){
+      const v = cfg.scenario === "highway"
+        ? { x: rng.next()*w, y: h*0.15 + rng.next()*h*0.7, headingDeg: 0, speed: 4 + rng.next()*2.5 }
+        : { x: rng.next()*w, y: rng.next()*h, headingDeg: rng.next()*360, speed: 1.5 + rng.next()*2 };
+      v.servingId = nearestBS(v, bsList).id;
+      v.flash = false;
+      vehicles.push(v);
+    }
+    return { bsList, vehicles, handoffCountTotal: 0, displayCount, requested: cfg.numVehicles };
+  }
+
+  function stepNetworkView(net, cfg, roundMetrics, rng){
+    const w = netCanvas.width, h = netCanvas.height;
+    // per-vehicle independent handoff roll, scaled down since it's now
+    // rolled once per vehicle per tick rather than once for a single vehicle
+    const hoChance = Math.min(0.5, roundMetrics.ho * 0.18);
+    net.vehicles.forEach(v=>{
+      v.flash = false;
+      if(cfg.scenario === "highway"){
+        v.x += v.speed;
+        if(v.x > w) v.x = 0;
+      } else {
+        if(rng.next() < 0.05) v.headingDeg += (rng.next()<0.5 ? -90 : 90);
+        v.x = Math.max(10, Math.min(w-10, v.x + v.speed*Math.cos(v.headingDeg*Math.PI/180)));
+        v.y = Math.max(10, Math.min(h-10, v.y + v.speed*Math.sin(v.headingDeg*Math.PI/180)));
+      }
+      if(rng.next() < hoChance){
+        const nearest = nearestBS(v, net.bsList);
+        const others = net.bsList.filter(b=>b.id !== v.servingId);
+        const target = rng.next() < 0.7 ? nearest : others[Math.floor(rng.next()*others.length)];
+        if(target && target.id !== v.servingId){
+          v.servingId = target.id;
+          v.flash = true;
+          net.handoffCountTotal++;
+        }
+      }
+    });
+  }
+
+  function drawNetworkView(net){
+    const w = netCanvas.width, h = netCanvas.height;
+    netCtx.clearRect(0,0,w,h);
+    netCtx.strokeStyle = "rgba(0,224,255,.06)";
+    for(let gx=0; gx<w; gx+=45){ netCtx.beginPath(); netCtx.moveTo(gx,0); netCtx.lineTo(gx,h); netCtx.stroke(); }
+    for(let gy=0; gy<h; gy+=45){ netCtx.beginPath(); netCtx.moveTo(0,gy); netCtx.lineTo(w,gy); netCtx.stroke(); }
+
+    // towers: glow halo (coverage) + triangle marker + label
+    net.bsList.forEach(bs=>{
+      const color = BS_COLORS[bs.type];
+      const grad = netCtx.createRadialGradient(bs.x,bs.y,0,bs.x,bs.y,70);
+      grad.addColorStop(0, color+"33"); grad.addColorStop(1, color+"00");
+      netCtx.fillStyle = grad;
+      netCtx.beginPath(); netCtx.arc(bs.x,bs.y,70,0,2*Math.PI); netCtx.fill();
+
+      netCtx.fillStyle = color;
+      netCtx.beginPath();
+      netCtx.moveTo(bs.x, bs.y-12); netCtx.lineTo(bs.x-10, bs.y+9); netCtx.lineTo(bs.x+10, bs.y+9);
+      netCtx.closePath(); netCtx.fill();
+      netCtx.font = "9px sans-serif"; netCtx.fillStyle = color; netCtx.textAlign = "center";
+      netCtx.fillText(bs.type, bs.x, bs.y+22);
+    });
+
+    // vehicles: colored dot per serving RAT; connecting lines only when the
+    // fleet is small enough that lines add clarity instead of clutter
+    const showLines = net.displayCount <= 30;
+    const counts = { LTE:0, "5G":0, WiFi:0 };
+    net.vehicles.forEach(v=>{
+      const serving = net.bsList.find(b=>b.id===v.servingId);
+      const color = BS_COLORS[serving.type];
+      counts[serving.type]++;
+      if(showLines){
+        netCtx.setLineDash([3,3]);
+        netCtx.strokeStyle = color+"55"; netCtx.lineWidth = 1;
+        netCtx.beginPath(); netCtx.moveTo(v.x,v.y); netCtx.lineTo(serving.x,serving.y); netCtx.stroke();
+        netCtx.setLineDash([]);
+      }
+      netCtx.beginPath();
+      netCtx.fillStyle = v.flash ? "#ffffff" : color;
+      netCtx.arc(v.x, v.y, v.flash ? 5 : 3.2, 0, 2*Math.PI);
+      netCtx.fill();
+      if(v.flash){
+        netCtx.strokeStyle = color; netCtx.lineWidth = 2;
+        netCtx.beginPath(); netCtx.arc(v.x, v.y, 8, 0, 2*Math.PI); netCtx.stroke();
+      }
+    });
+
+    document.getElementById("cntLTE").textContent = counts.LTE;
+    document.getElementById("cnt5G").textContent = counts["5G"];
+    document.getElementById("cntWiFi").textContent = counts.WiFi;
+
+    const capNote = net.displayCount < net.requested
+      ? ` (showing ${net.displayCount} of ${net.requested} for clarity)` : "";
+    document.getElementById("netStatus").innerHTML =
+      `<b>${net.requested}</b> vehicles in fleet${capNote} — total handoffs so far: <b>${net.handoffCountTotal}</b>`;
+  }
+
+  function clearNetworkView(){
+    netCtx.clearRect(0,0,netCanvas.width,netCanvas.height);
+    document.getElementById("netStatus").textContent = "Not started.";
+    document.getElementById("netSubtitle").textContent =
+      "Press Start to watch your vehicle fleet switch between networks in real time.";
+    ["cntLTE","cnt5G","cntWiFi"].forEach(id=>document.getElementById(id).textContent = "0");
+  }
+
+  // ---------- chart setup ----------
+  const rewardCtx = document.getElementById("rewardChart").getContext("2d");
+  const hoCtx = document.getElementById("hoChart").getContext("2d");
+  function baseChart(ctx, label, color){
+    return new Chart(ctx, {
+      type: "line",
+      data: { labels: [], datasets: [{ label, data: [], borderColor: color,
+        backgroundColor: color+"22", tension:.25, pointRadius:0, borderWidth:2 }] },
+      options: { animation:false, responsive:true,
+        scales:{ x:{ title:{display:true, text:"Round"} }, y:{ beginAtZero:true } },
+        plugins:{ legend:{display:true} } }
+    });
+  }
+  let rewardChart = baseChart(rewardCtx, "Avg. Reward", "#4361ee");
+  let hoChart = new Chart(hoCtx, {
+    type: "line",
+    data: { labels: [], datasets: [
+      { label:"Handoff Probability", data:[], borderColor:"#e76f51", backgroundColor:"#e76f5122", tension:.25, pointRadius:0, borderWidth:2 },
+      { label:"Ping-Pong Probability", data:[], borderColor:"#2a9d8f", backgroundColor:"#2a9d8f22", tension:.25, pointRadius:0, borderWidth:2 }
+    ]},
+    options: { animation:false, responsive:true,
+      scales:{ x:{ title:{display:true, text:"Round"} }, y:{ beginAtZero:true, max:1 } },
+      plugins:{ legend:{display:true} } }
+  });
+
+  // ---------- simulation control ----------
+  const startBtn = document.getElementById("startBtn"), stopBtn = document.getElementById("stopBtn"),
+        resetBtn = document.getElementById("resetBtn"), statusEl = document.getElementById("status"),
+        algoSel = document.getElementById("algo"), roundsLabel = document.getElementById("roundsLabel");
+  const inputs = ["algo","scenario","numVehicles","numRounds","numEpisodes","lr","maxSteps",
+                  "batchSize","bufferCapacity","gamma","targetSync","speed"]
+        .reduce((o,id)=>(o[id]=document.getElementById(id), o), {});
+  algoSel.addEventListener("change", ()=>{
+    roundsLabel.textContent = algoSel.value === "fed" ? "Federated Rounds" : "Training Episodes (x10)";
+  });
+
+  let timer = null, currentRun = null;
+
+  function setFormDisabled(disabled){
+    Object.values(inputs).forEach(el=>el.disabled = disabled);
+    startBtn.disabled = disabled; stopBtn.disabled = !disabled; resetBtn.disabled = disabled;
+  }
+
+  function readConfig(){
+    return {
+      algo: inputs.algo.value,
+      scenario: inputs.scenario.value,
+      numVehicles: Math.max(1, parseInt(inputs.numVehicles.value)||1),
+      numRounds: Math.max(1, parseInt(inputs.numRounds.value)||1),
+      numEpisodes: Math.max(1, parseInt(inputs.numEpisodes.value)||1),
+      lr: Math.max(0.00001, parseFloat(inputs.lr.value)||0.001),
+      maxSteps: Math.max(10, parseInt(inputs.maxSteps.value)||200),
+      batchSize: Math.max(4, parseInt(inputs.batchSize.value)||64),
+      bufferCapacity: Math.max(50, parseInt(inputs.bufferCapacity.value)||2000),
+      gamma: Math.min(0.999, Math.max(0.5, parseFloat(inputs.gamma.value)||0.99)),
+      targetSync: Math.max(1, parseInt(inputs.targetSync.value)||7),
+      speed: Math.max(20, parseInt(inputs.speed.value)||120),
+    };
+  }
+
+  function resetCharts(){
+    [rewardChart, hoChart].forEach(c=>{
+      c.data.labels = [];
+      c.data.datasets.forEach(d=>d.data=[]);
+      c.update();
+    });
+    document.getElementById("mReward").textContent = "--";
+    document.getElementById("mHo").textContent = "--";
+    document.getElementById("mPP").textContent = "--";
+    document.getElementById("mRound").textContent = "0 / 0";
+    clearNetworkView();
+  }
+
+  startBtn.addEventListener("click", ()=>{
+    const cfg = readConfig();
+    resetCharts();
+    setFormDisabled(true);
+    statusEl.innerHTML = `Running <b>${cfg.algo === "fed" ? "Federated DRL" : "DDQN-TS baseline"}</b> — `+
+      `${cfg.numVehicles} vehicles, ${cfg.numRounds} rounds, ${cfg.numEpisodes} episodes/round, scenario: ${cfg.scenario}`;
+    const rng = makeRng(Date.now() % 100000 + cfg.numVehicles*7 + cfg.numRounds*13);
+    const net = initNetworkView(cfg, rng);
+    document.getElementById("netSubtitle").textContent =
+      `${cfg.numVehicles} vehicles live in the ${cfg.scenario} scenario — colors show which network each is on.`;
+    drawNetworkView(net);
+    currentRun = { cfg, series: { round:[], reward:[], ho:[], pp:[] }, startedAt: Date.now(), completed:false };
+    let round = 0;
+    timer = setInterval(()=>{
+      round++;
+      const m = computeRoundMetrics(round, cfg.numRounds, cfg, rng);
+      stepNetworkView(net, cfg, m, rng);
+      drawNetworkView(net);
+      currentRun.series.round.push(round);
+      currentRun.series.reward.push(+m.reward.toFixed(3));
+      currentRun.series.ho.push(+m.ho.toFixed(3));
+      currentRun.series.pp.push(+m.pp.toFixed(3));
+
+      rewardChart.data.labels.push(round);
+      rewardChart.data.datasets[0].data.push(m.reward);
+      rewardChart.update();
+      hoChart.data.labels.push(round);
+      hoChart.data.datasets[0].data.push(m.ho);
+      hoChart.data.datasets[1].data.push(m.pp);
+      hoChart.update();
+
+      document.getElementById("mReward").textContent = m.reward.toFixed(2);
+      document.getElementById("mHo").textContent = (m.ho*100).toFixed(1)+"%";
+      document.getElementById("mPP").textContent = (m.pp*100).toFixed(1)+"%";
+      document.getElementById("mRound").textContent = `${round} / ${cfg.numRounds}`;
+
+      if(round >= cfg.numRounds){
+        clearInterval(timer); timer=null;
+        currentRun.completed = true;
+        finishRun();
+      }
+    }, cfg.speed);
+  });
+
+  stopBtn.addEventListener("click", ()=>{
+    if(timer){ clearInterval(timer); timer=null; }
+    if(currentRun && currentRun.series.round.length>0){ finishRun(); }
+    else { setFormDisabled(false); statusEl.textContent = "Stopped."; }
+  });
+
+  resetBtn.addEventListener("click", ()=>{
+    if(timer){ clearInterval(timer); timer=null; }
+    resetCharts();
+    setFormDisabled(false);
+    statusEl.textContent = "Not started.";
+    currentRun = null;
+  });
+
+  function finishRun(){
+    setFormDisabled(false);
+    const n = currentRun.series.round.length;
+    const finalReward = currentRun.series.reward[n-1];
+    const finalHo = currentRun.series.ho[n-1];
+    const record = {
+      id: "run_"+Date.now(),
+      when: new Date().toISOString(),
+      algo: currentRun.cfg.algo,
+      scenario: currentRun.cfg.scenario,
+      numVehicles: currentRun.cfg.numVehicles,
+      numRounds: currentRun.cfg.numRounds,
+      numEpisodes: currentRun.cfg.numEpisodes,
+      lr: currentRun.cfg.lr,
+      maxSteps: currentRun.cfg.maxSteps,
+      batchSize: currentRun.cfg.batchSize,
+      bufferCapacity: currentRun.cfg.bufferCapacity,
+      gamma: currentRun.cfg.gamma,
+      targetSync: currentRun.cfg.targetSync,
+      finalReward, finalHo,
+      series: currentRun.series,
+      completed: currentRun.completed
+    };
+    addRun(record);
+    statusEl.innerHTML = `${currentRun.completed ? "Completed" : "Stopped early"} — saved to Results History `+
+      `(final reward ${finalReward.toFixed(2)}, handoff ${(finalHo*100).toFixed(1)}%).`;
+  }
+
+  // ---------- results history rendering ----------
+  const runsBody = document.getElementById("runsBody"), emptyMsg = document.getElementById("emptyMsg");
+  const viewCard = document.getElementById("viewCard"), viewTitle = document.getElementById("viewTitle");
+  let historyChart = null;
+
+  function renderRunsTable(){
+    const runs = loadRuns().slice().reverse();
+    runsBody.innerHTML = "";
+    emptyMsg.style.display = runs.length ? "none" : "block";
+    runs.forEach(r=>{
+      const tr = document.createElement("tr");
+      const when = new Date(r.when).toLocaleString();
+      const pillClass = r.algo === "fed" ? "pill-fed" : "pill-base";
+      const pillLabel = r.algo === "fed" ? "Federated" : "Baseline";
+      tr.innerHTML = `<td>${when}</td><td><span class="pill ${pillClass}">${pillLabel}</span></td>`+
+        `<td>${r.scenario}</td><td>${r.numVehicles}</td><td>${r.numRounds}</td><td>${r.numEpisodes}</td>`+
+        `<td>${r.finalReward.toFixed(2)}</td><td>${(r.finalHo*100).toFixed(1)}%</td>`+
+        `<td><button class="btn btn-ghost" data-id="${r.id}">View</button></td>`;
+      runsBody.appendChild(tr);
+    });
+    runsBody.querySelectorAll("button[data-id]").forEach(btn=>{
+      btn.addEventListener("click", ()=>viewRun(btn.getAttribute("data-id")));
+    });
+  }
+
+  function viewRun(id){
+    const runs = loadRuns();
+    const r = runs.find(x=>x.id===id);
+    if(!r) return;
+    viewCard.style.display = "block";
+    viewTitle.textContent = `${r.algo==="fed"?"Federated DRL":"DDQN-TS baseline"} — ${r.scenario}, `+
+      `${r.numVehicles} vehicles, ${r.numRounds} rounds, ${r.numEpisodes} episodes/round, `+
+      `${r.maxSteps} steps/episode, lr=${r.lr}, batch=${r.batchSize}, buffer=${r.bufferCapacity}, `+
+      `γ=${r.gamma}, target-sync=${r.targetSync}`;
+    const ctx = document.getElementById("historyChart").getContext("2d");
+    if(historyChart) historyChart.destroy();
+    historyChart = new Chart(ctx, {
+      type:"line",
+      data:{ labels:r.series.round, datasets:[
+        { label:"Avg. Reward", data:r.series.reward, borderColor:"#4361ee", tension:.25, pointRadius:0, borderWidth:2, yAxisID:"y" },
+        { label:"Handoff Prob.", data:r.series.ho, borderColor:"#e76f51", tension:.25, pointRadius:0, borderWidth:2, yAxisID:"y1" },
+        { label:"Ping-Pong Prob.", data:r.series.pp, borderColor:"#2a9d8f", tension:.25, pointRadius:0, borderWidth:2, yAxisID:"y1" },
+      ]},
+      options:{ animation:false, responsive:true,
+        scales:{
+          x:{ title:{display:true, text:"Round"} },
+          y:{ position:"left", beginAtZero:true, title:{display:true,text:"Reward"} },
+          y1:{ position:"right", beginAtZero:true, max:1, grid:{drawOnChartArea:false}, title:{display:true,text:"Probability"} }
+        }}
+    });
+    viewCard.scrollIntoView({behavior:"smooth"});
+  }
+
+  document.getElementById("clearAllBtn").addEventListener("click", ()=>{
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    viewCard.style.display = "none";
+    renderRunsTable();
+  });
+
+  renderRunsTable();
+})();
+</script>
+</body>
+</html>
