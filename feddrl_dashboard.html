@@ -116,6 +116,9 @@
     <label>Target-network sync period (steps)</label>
     <input id="targetSync" type="number" value="7">
 
+    <label>Simulation time (seconds)</label>
+    <input id="simTime" type="number" value="30" min="1" max="3600" step="1">
+
     <button class="primary" id="runBtn">Run Simulation</button>
     <button class="ghost" id="stopBtn" disabled>Stop</button>
     <button class="ghost" id="exportBtn" disabled>Download Results Folder (.zip)</button>
@@ -227,6 +230,7 @@ function getConfig(){
     batch_size: +v('batchSize'),
     buffer_capacity: +v('bufferCap'),
     target_sync_every: +v('targetSync'),
+    sim_time_sec: Math.max(1, +v('simTime') || 30),
   };
 }
 document.getElementById('algorithm').addEventListener('change', e=>{
@@ -418,44 +422,55 @@ document.getElementById('runBtn').addEventListener('click', ()=>{
   document.getElementById('runStatus').innerHTML = '<span class="pulse">● running…</span>';
 
   let round = 0, prevReward=null;
+  const totalMs = currentCfg.sim_time_sec * 1000, t0 = performance.now();
+  const st = document.getElementById('runStatus');
+
+  function recordRound(){
+    round++;
+    const m = computeRoundMetrics(currentCfg, round, prevReward);
+    prevReward = m.reward;
+    runHistory.round.push(round);
+    runHistory.reward.push(m.reward);
+    runHistory.ho_prob.push(m.hoProb);
+    runHistory.pingpong_prob.push(m.ppProb);
+
+    if(rewardChart){
+      rewardChart.data.labels.push(round);
+      rewardChart.data.datasets[0].data.push(m.reward);
+      rewardChart.update('none');
+    }
+    if(hoChart){
+      hoChart.data.labels.push(round);
+      hoChart.data.datasets[0].data.push(m.hoProb);
+      hoChart.data.datasets[1].data.push(m.ppProb);
+      hoChart.update('none');
+    }
+    document.getElementById('sumRound').textContent = `${round} / ${currentCfg.num_rounds}`;
+    document.getElementById('sumReward').textContent = m.reward.toFixed(3);
+    document.getElementById('sumHo').textContent = (m.hoProb*100).toFixed(1)+'%';
+    document.getElementById('sumPp').textContent = (m.ppProb*100).toFixed(1)+'%';
+  }
+
+  // Animation runs at ~20 fps; training rounds are paced so the whole run takes `sim_time_sec`.
   timer = setInterval(()=>{
     try{
-      hoThisTick = 0;
-      for(let k=0;k<3;k++){ stepVehicles(); }
+      const elapsed = performance.now() - t0;
+      stepVehicles();
       drawVehicles();
 
-      round++;
-      const m = computeRoundMetrics(currentCfg, round, prevReward);
-      prevReward = m.reward;
-      runHistory.round.push(round);
-      runHistory.reward.push(m.reward);
-      runHistory.ho_prob.push(m.hoProb);
-      runHistory.pingpong_prob.push(m.ppProb);
+      const target = Math.min(currentCfg.num_rounds, Math.floor(elapsed / totalMs * currentCfg.num_rounds));
+      let advanced = false;
+      while(round < target){ recordRound(); advanced = true; }
+      if(advanced) hoThisTick = 0;   // "handoffs this tick" = handoffs since the last round
 
-      if(rewardChart){
-        rewardChart.data.labels.push(round);
-        rewardChart.data.datasets[0].data.push(m.reward);
-        rewardChart.update('none');
-      }
-      if(hoChart){
-        hoChart.data.labels.push(round);
-        hoChart.data.datasets[0].data.push(m.hoProb);
-        hoChart.data.datasets[1].data.push(m.ppProb);
-        hoChart.update('none');
-      }
-
-      document.getElementById('sumRound').textContent = `${round} / ${currentCfg.num_rounds}`;
-      document.getElementById('sumReward').textContent = m.reward.toFixed(3);
-      document.getElementById('sumHo').textContent = (m.hoProb*100).toFixed(1)+'%';
-      document.getElementById('sumPp').textContent = (m.ppProb*100).toFixed(1)+'%';
-
+      st.innerHTML = `<span class="pulse">● running…</span> ${Math.min(elapsed/1000, currentCfg.sim_time_sec).toFixed(1)}s / ${currentCfg.sim_time_sec}s`;
       if(round >= currentCfg.num_rounds){ finishRun(); }
     }catch(err){
       console.error(err);
-      document.getElementById('runStatus').textContent = 'error: ' + err.message;
+      st.textContent = 'error: ' + err.message;
       finishRun();
     }
-  }, 180);
+  }, 50);
 });
 
 document.getElementById('stopBtn').addEventListener('click', finishRun);
