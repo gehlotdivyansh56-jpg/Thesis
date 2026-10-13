@@ -1,0 +1,29 @@
+{
+  "saved_at": "2026-10-09T12:06:33",
+  "run_tag": "20261009_120633_rural_120veh",
+  "config": {
+    "algorithm": "Federated DRL (proposed)",
+    "algo": "fed",
+    "scenario": "rural",
+    "num_vehicles": 120,
+    "rounds_planned": 50,
+    "rounds_completed": 50,
+    "completed": true,
+    "episodes_per_round": 50,
+    "learning_rate": 0.002,
+    "max_steps": 250,
+    "batch_size": 32,
+    "buffer_capacity": 2000,
+    "gamma": 0.99,
+    "target_sync": 7
+  },
+  "results": {
+    "final_reward": 14.994,
+    "mean_reward_last10": 14.990400000000003,
+    "best_reward": 15.047,
+    "final_handoff_prob": 0.123,
+    "final_pingpong_prob": 0.081,
+    "mean_handoff_prob": 0.18416,
+    "mean_pingpong_prob": 0.12848000000000007
+  }
+}

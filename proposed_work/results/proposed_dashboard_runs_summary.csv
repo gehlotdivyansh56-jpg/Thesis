@@ -1,0 +1,2 @@
+run_tag,saved_at,algo,scenario,num_vehicles,rounds_completed,rounds_planned,completed,episodes_per_round,lr,max_steps,batch_size,buffer_capacity,gamma,target_sync,final_reward,mean_reward_last10,best_reward,final_handoff_prob,final_pingpong_prob
+20261009_120633_rural_120veh,2026-10-09T12:06:33,fed,rural,120,50,50,True,50,0.002,250,32,2000,0.99,7,14.994,14.9904,15.047,0.123,0.081

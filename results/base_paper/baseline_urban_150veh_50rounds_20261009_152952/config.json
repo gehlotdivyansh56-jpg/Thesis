@@ -1,0 +1,13 @@
+{
+  "algorithm": "baseline",
+  "scenario": "urban",
+  "num_vehicles": 150,
+  "num_rounds": 50,
+  "episodes_per_round": 50,
+  "max_steps": 250,
+  "lr": 0.002,
+  "gamma": 0.99,
+  "batch_size": 32,
+  "buffer_capacity": 2000,
+  "target_sync_every": 7
+}
